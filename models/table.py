@@ -13,7 +13,7 @@ db.define_table('menu',
                 Field('appetizer', db.dish),
                 Field('entree', db.dish),
                 Field('dessert',  db.dish),
-                Field('name', 'String'),
+                Field('name'),
                 Field('serving_number', 'boolean'), #number of people this menu should serve
                 Field('delivery_time', 'datetime'),
                 Field('frequency', 'integer'), #number of days between deliveries ex. 7 = weekly deliveries
