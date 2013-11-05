@@ -19,7 +19,10 @@ def index():
     return auth.wiki()
     """
     response.flash = T("Welcome to web2py!")
-    return dict(message=T('Hello World'))
+    response.menu = [['Home', False, URL('default', 'index')],
+                     ['Make A Menu', False, URL('default', 'construction')],
+                     ['Make A Schedule', False, URL('default', 'construction')]]
+    return dict(menu="yolo")
 
 
 def user():
@@ -38,6 +41,10 @@ def user():
     to decorate functions that need access control
     """
     return dict(form=auth())
+
+def construction():
+    return dict(message="Under Construction")
+
 
 @cache.action()
 def download():
