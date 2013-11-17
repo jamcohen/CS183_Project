@@ -11,18 +11,33 @@
 
 
 def index():
-    """
-    example action using the internationalization operator T and flash
-    rendered by views/default/index.html or views/generic.html
-
-    if you need a simple wiki simple replace the two lines below with:
-    return auth.wiki()
-    """
     response.flash = T("Welcome to web2py!")
     response.menu = [['Home', False, URL('default', 'index')],
                      ['Make A Menu', False, URL('default', 'construction')],
-                     ['Make A Schedule', False, URL('default', 'construction')]]
+                     ['Make A Schedule', False, URL('default', 'construction')],
+                     ['Make A Dish', False, URL('default', 'make_dish')]]
     return dict(menu="yolo")
+
+def make_dish():
+    form = SQLFORM(db.dish, fields = ['name', 'description', 'price', 'ingredients',
+                                       'category', 'vegetarian', 'vegan', 'gluten_free'])
+    if form.process().accepted:
+        db.dish(form.vars.id)
+        redirect(URL('default', 'view_dish', args=[form.vars.id]))
+    return dict(form=form)
+
+def view_dish():
+    Dish = db.dish(request.args(0,cast=int))
+    return dict(Dish=Dish)
+
+def all_dishes():
+    q = db.dish
+    grid = SQLFORM.grid(q,
+           fields = [db.dish.name],
+           csv = False
+           )
+    return dict(grid=grid)
+    
 
 
 def user():
