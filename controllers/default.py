@@ -2,43 +2,135 @@
 # this file is released under public domain and you can use without limitations
 
 #########################################################################
-## This is a sample controller
-## - index is the default action of any application
-## - user is required for authentication and authorization
-## - download is for downloading files uploaded in the db (does streaming)
-## - call exposes all registered services (none by default)
+# # This is a sample controller
+# # - index is the default action of any application
+# # - user is required for authentication and authorization
+# # - download is for downloading files uploaded in the db (does streaming)
+# # - call exposes all registered services (none by default)
 #########################################################################
 
 
 def index():
+    
     response.flash = T("Welcome to web2py!")
     response.menu = [['Home', False, URL('default', 'index')],
-                     ['Make A Menu', False, URL('default', 'construction')],
+                     ['Make A Menu', False, URL('default', 'create_menu')],
                      ['Make A Schedule', False, URL('default', 'construction')],
-                     ['Make A Dish', False, URL('default', 'make_dish')]]
+                     ['Make A Dish', False, URL('default', 'make_dish')],
+                     ['View My Menus', False, URL('default', 'my_menus')]]
     return dict(menu="yolo")
 
+@auth.requires_login()
 def make_dish():
-    form = SQLFORM(db.dish, fields = ['name', 'description', 'price', 'ingredients',
-                                       'category', 'vegetarian', 'vegan', 'gluten_free'])
+    
+    response.menu = [['Home', False, URL('default', 'index')],
+                     ['Make A Menu', False, URL('default', 'create_menu')],
+                     ['Make A Schedule', False, URL('default', 'construction')],
+                     ['Make A Dish', False, URL('default', 'make_dish')],
+                     ['View My Menus', False, URL('default', 'my_menus')]]
+    
+    #to populate the drop down to select the category
+    categories = ("Appetizer", "Entree", "Dessert")
+    form = SQLFORM.factory(Field('category', requires=IS_IN_SET(range(1, 4), categories)), db.dessert, db.appetizer, db.entree, deletable=True, upload=URL(r=request, f='download'))
+    
+    #based on which category the user selects the form processes to a different table
     if form.process().accepted:
-        db.dish(form.vars.id)
-        redirect(URL('default', 'view_dish', args=[form.vars.id]))
-    return dict(form=form)
+        if(form.vars.category == "1"):
+            db.appetizer.insert(**db.appetizer._filter_fields(form.vars))
+            response.flash = 'form accepted'
+            redirect(URL('default', 'view_dish',args=[form.vars.name,"appetizer"]))
+        elif(form.vars.category == "2"):
+            db.entree.insert(**db.entree._filter_fields(form.vars))
+            response.flash = 'form accepted'
+            redirect(URL('default', 'view_dish',args=[form.vars.name,"entree"]))
+        elif(form.vars.category == "3"):
+            db.dessert.insert(**db.dessert._filter_fields(form.vars))
+            response.flash = 'form accepted'
+            redirect(URL('default', 'view_dish',args=[form.vars.name,"dessert"]))
+        
+    return dict(form=form, menu="yolo")
 
+#method to view single dishes
 def view_dish():
-    Dish = db.dish(request.args(0,cast=int))
-    return dict(Dish=Dish)
-
-def all_dishes():
-    q = db.dish
-    grid = SQLFORM.grid(q,
-           fields = [db.dish.name],
-           csv = False
-           )
-    return dict(grid=grid)
+   
+    response.menu = [['Home', False, URL('default', 'index')],
+                     ['Make A Menu', False, URL('default', 'create_menu')],
+                     ['Make A Schedule', False, URL('default', 'construction')],
+                     ['Make A Dish', False, URL('default', 'make_dish')],
+                     ['View My Menus', False, URL('default', 'my_menus')]]
+    
+    dishname = request.args(0).replace("_"," ")
+    if(request.args(1) == "appetizer"):
+        dish = db(db.appetizer.name==dishname).select().first()
+        return dict(dish=dish)
+    elif(request.args(1) == "entree"):
+        dish = db(db.entree.name==dishname).select().first()
+        return dict(dish=dish)
+    elif(request.args(1) == "dessert"):
+        dish = db(db.dessert.name==dishname).select().first()
+        return dict(dish=dish,menu="yolo")
     
 
+def all_dishes():
+   
+   appetizers = SQLFORM.grid(db.appetizer)
+   entrees = SQLFORM.grid(db.entree)
+   desserts = SQLFORM.grid(db.dessert)
+   return locals()
+
+@auth.requires_login() 
+def create_menu():
+    
+    response.menu = [['Home', False, URL('default', 'index')],
+                     ['Make A Menu', False, URL('default', 'create_menu')],
+                     ['Make A Schedule', False, URL('default', 'construction')],
+                     ['Make A Dish', False, URL('default', 'make_dish')],
+                     ['View My Menus', False, URL('default', 'my_menus')]]
+    
+    db.menu.appetizer.requires = IS_IN_DB(db, 'appetizer.name', '%(name)s')
+    db.menu.entree.requires = IS_IN_DB(db, 'entree.name', '%(name)s')
+    db.menu.dessert.requires = IS_IN_DB(db, 'dessert.name', '%(name)s')
+
+    form = SQLFORM(db.menu)
+    if form.process().accepted:
+        response.flash = 'form accepted'
+    elif form.errors:
+        response.flash = 'form has errors'
+    else:
+       response.flash = 'please fill the form'
+   # Note: no form instance is passed to the view
+    return dict(form=form, menu="yolo")
+
+@auth.requires_login() 
+def my_menus():
+    
+    response.menu = [['Home', False, URL('default', 'index')],
+                     ['Make A Menu', False, URL('default', 'create_menu')],
+                     ['Make A Schedule', False, URL('default', 'construction')],
+                     ['Make A Dish', False, URL('default', 'make_dish')],
+                     ['View My Menus', False, URL('default', 'my_menus')]]
+        
+    email = auth.user.email
+    mymenus = db(db.menu.user_id == email).select()
+    return dict(mymenus=mymenus, menu="yolo")
+
+
+@auth.requires_login() 
+def view_menu():
+    
+    menu = db.menu(request.args(0))
+    email = auth.user.email
+    if menu.user_id == email:
+        return dict(menu=menu)
+    else:
+        session.flash = 'invalid request'
+        redirect(URL('default', 'index'))
+        
+def all_menus():
+   
+   menus = SQLFORM.grid(db.menu)
+   return locals()
+        
 
 def user():
     """
