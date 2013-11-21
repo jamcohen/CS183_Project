@@ -1,0 +1,27 @@
+{{extend 'layout.html'}}
+<script type='text/javascript' src='{{=URL('static', 'js/fullcalendar.min.js')}}'></script>
+
+<style>
+    .menus-container{ width:150px }
+</style>
+
+<script>
+    $(document).ready(function() {
+        $('#menus').accordion({
+            'width':350
+        });
+
+        $('.menus').draggable();
+    });
+</script>
+
+<div class="menus-container" id="menus">
+  {{for menu in rows:}}
+        <h3>____{{=menu['name']}}</h3>
+        <div>
+        <p>Appetizer</p>
+        <p>Entree</p>
+        <p>Dessert</p>
+    </div>
+  {{pass}}
+</div>

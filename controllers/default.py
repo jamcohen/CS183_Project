@@ -8,15 +8,12 @@
 ## - download is for downloading files uploaded in the db (does streaming)
 ## - call exposes all registered services (none by default)
 #########################################################################
-
+from datetime import date, datetime, timedelta
 
 def index():
-    response.flash = T("Welcome to web2py!")
-    response.menu = [['Home', False, URL('default', 'index')],
-                     ['Make A Menu', False, URL('default', 'construction')],
-                     ['Make A Schedule', False, URL('default', 'construction')],
-                     ['Make A Dish', False, URL('default', 'make_dish')]]
-    return dict(menu="yolo")
+    today = date.today()
+    row = dict(date=today, name="Onions", frequency=7)
+    return dict(row=row)
 
 def make_dish():
     form = SQLFORM(db.dish, fields = ['name', 'description', 'price', 'ingredients',
@@ -37,7 +34,13 @@ def all_dishes():
            csv = False
            )
     return dict(grid=grid)
-    
+
+def schedule():
+    menu1 = {'name':'Family Meal', 'delivery_time':date.today(), 'frequency':7}
+    menu2 = {'name':'My Meal', 'delivery_time':date.today()+timedelta(2), 'frequency':14}
+    rows = [menu1, menu2]
+    return dict(rows=rows)
+
 
 
 def user():

@@ -1,4 +1,35 @@
 {{extend 'layout.html'}}
+<script type='text/javascript' src='{{=URL('static', 'js/fullcalendar.min.js')}}'></script>
+<script>
+    $(document).ready(function() {
+
+        // page is now ready, initialize the calendar...
+        $('#calendar').fullCalendar({
+            theme:true,
+             height: 350,
+             buttons: false,
+            // put your options and callbacks here
+            header: {
+                        left: '',
+                        center: '',
+                        right: ''
+                    },
+	    editable: true,
+
+            events:[ {
+                    title  : '{{=(row['name'])}}',
+                    start  : '{{=(row['date'])}}'
+                }]
+        })
+    });
+</script>
+
+<style>
+.calendar-container {
+    width: 600px;
+}
+</style>
+
 <div>
     <h1>
         You're next meal is: <a>Meal Name</a>
@@ -6,4 +37,8 @@
     <h2>
         To be delivered on: Delivery Date
     </h2>
+    <h2>
+        This month's schedule:
+    </h2>
+    <div class='calendar-container' id='calendar'></div>
 </div>
