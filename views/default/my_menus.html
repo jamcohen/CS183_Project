@@ -1,0 +1,10 @@
+{{extend 'layout.html'}}
+
+<h1>My Menus</h1>
+
+<p>Here are your created menus:</p>
+<ul>
+{{for menu in mymenus:}}
+{{=LI(A(menu.name+' ', _href=URL('view_menu', args=[menu.id])))}}
+{{pass}}
+</ul>
