@@ -1,0 +1,8 @@
+{{extend 'layout.html'}}
+<h1>Name: {{=menu.name}}</h1>
+<p><b>Appetizer:</b> {{=A(menu.appetizer.name, _href=URL('view_dish', args=[menu.appetizer]))}}</p>
+<p><b>Entree:</b> {{=A(menu.entree.name, _href=URL('view_dish', args=[menu.entree]))}}</p>
+<p><b>Dessert:</b> {{=A(menu.dessert.name, _href=URL('view_dish', args=[menu.dessert]))}}</p>
+<p><b>Serving Number:</b> {{=menu.serving_number}}</p>
+<p><b>Delivery time:</b> {{=menu.delivery_time}}</p>
+<p><b>Frequency:</b> {{=menu.frequency}}</p>

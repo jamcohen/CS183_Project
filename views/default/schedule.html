@@ -2,26 +2,74 @@
 <script type='text/javascript' src='{{=URL('static', 'js/fullcalendar.min.js')}}'></script>
 
 <style>
-    .menus-container{ width:150px }
+    .menus-container{
+        width:15%;
+        max-height:600px;
+        border:solid;
+        overflow:auto;
+        float:left;
+        margin-top:83px;
+    }
+
+    .menu-cell{
+        margin-left:5px;
+        margin-right:5px;
+        margin-bottom: 20px;
+        margin-top:20px;
+        width:auto;
+        border:solid;
+    }
+
+    .menu-cell:hover{
+        background-color: rgb(200,200,200);
+    }
+
+    .menu-cell .ui-draggable-dragging{
+        color: rgb(50,0,0);
+        background-color: rgb(250,200,200);
+    }
+
+    .calendar-container{
+        width:70%;
+        float:left;
+    }
+
 </style>
 
 <script>
     $(document).ready(function() {
-        $('#menus').accordion({
+        /*$('#menus').accordion({
             'width':350
-        });
+        });*/
 
-        $('.menus').draggable();
+        var draggableArguments={
+            revert: 'invalid',
+            helper:'clone',
+            appendTo: '#page',
+            containment: 'DOM',
+            //zIndex: 1500,
+            //addClasses: false
+        }
+
+        $('.menu-cell').draggable(draggableArguments);
+
+        $('#calendar').fullCalendar();
     });
 </script>
 
-<div class="menus-container" id="menus">
-  {{for menu in rows:}}
-        <h3>____{{=menu['name']}}</h3>
-        <div>
-        <p>Appetizer</p>
-        <p>Entree</p>
-        <p>Dessert</p>
+<div id=page>
+    <div class="menus-container" id="menus">
+        {{for menu in rows:}}
+            <div class="menu-cell">
+            <h3>{{=menu.name}}</h3>
+            <div>
+                <p>{{=menu.appetizer.name}}</p>
+                <p>{{=menu.entree.name}}</p>
+                <p>{{=menu.dessert.name}}</p>
+            </div>
+            </div>
+        {{pass}}
     </div>
-  {{pass}}
+
+    <div class='calendar-container' id='calendar'></div>
 </div>
