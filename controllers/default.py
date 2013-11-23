@@ -9,11 +9,12 @@
 # # - call exposes all registered services (none by default)
 #########################################################################
 from datetime import date, datetime, timedelta
+import json
 
+@auth.requires_login()
 def index():
-    today = date.today()
-    row = dict(date=today, name="Onions", frequency=7)
-    return dict(row=row)
+    menu = get_next_menu()
+    return dict(menu=menu)
 
 @auth.requires_login()
 def make_dish():
@@ -27,6 +28,7 @@ def make_dish():
 
     return dict(form=form, menu="yolo")
 
+@auth.requires_login()
 #method to view single dishes
 def view_dish():
     dish = db.dish(db.dish.id==request.args(0))
@@ -35,6 +37,7 @@ def view_dish():
         redirect(URL('default', 'index'))
     return dict(dish=dish)
 
+@auth.requires_login()
 def all_dishes():
     q = db.dish
     grid = SQLFORM.grid(q,
@@ -43,12 +46,26 @@ def all_dishes():
            )
     return dict(grid=grid)
 
+@auth.requires_login()
 def schedule():
-    menu1 = {'name':'Family Meal', 'delivery_time':date.today(), 'frequency':7}
-    menu2 = {'name':'My Meal', 'delivery_time':date.today()+timedelta(2), 'frequency':14}
     email = get_email()
     rows = db(db.menu.user_id == email).select()
     return dict(rows=rows)
+
+@auth.requires_login()
+def set_schedule():
+    #date = json.load(request.vars)
+    email = get_email()
+    jsonDate = request.vars['datetime']
+    #Tue Nov 05 2013 22:00:00 GMT-0800 (PST)
+    date = datetime.strptime(jsonDate, '%a %b %d %Y %H:%M:%S GMT-0800 (PST)')
+    name = request.vars['name']
+    frequency = request.vars['frequency']
+    query = (db.menu.name==name) & (db.menu.user_id==email)
+    db(query).update(delivery_time=date)
+    db(query).update(frequency=frequency)
+    return  json.dumps({'success':True})
+
 
 @auth.requires_login()
 def create_menu():
@@ -56,7 +73,7 @@ def create_menu():
     db.menu.entree.requires = IS_IN_DB(db(db.dish.category=="Entree"), db.dish.id, '%(name)s')
     db.menu.dessert.requires = IS_IN_DB(db(db.dish.category=="Dessert"), db.dish.id, '%(name)s')
     form = SQLFORM(db.menu, fields = ['name', 'appetizer', 'entree', 'dessert',
-                                       'serving_number', 'delivery_time', 'frequency'],)
+                                       'serving_number'],)
     if form.process().accepted:
         response.flash = 'Your menu has been created'
         redirect(URL('default', 'view_menu',args=[form.vars.id]))
@@ -90,9 +107,61 @@ def view_menu():
         session.flash = 'invalid request'
         redirect(URL('default', 'index'))
 
+@auth.requires_login()
 def all_menus():
    menus = SQLFORM.grid(db.menu)
    return dict(menus=menus)
+
+@auth.requires_login()
+def get_next_menu():
+    email = auth.user.email
+    myMenus = db(db.menu.user_id == email).select()
+    start = datetime.today()
+    end = start + timedelta(31)
+    date = datetime.today() - timedelta(1)
+
+    #very inefficient, should probably get a better way to do this
+    #generate all menus in the next month
+    recurringMenus = []
+    for menu in myMenus:
+        frequency = menu.frequency
+        date = menu.delivery_time
+        recurringMenus.append({'menu':menu, 'date':date})
+        while date < end:
+            date = date + timedelta(frequency*7)
+            recurringMenus.append({'menu':menu, 'date':date})
+
+    recurringMenus.sort(key=lambda menu: menu['date'])
+    nextMenu = None
+    for event in recurringMenus:
+        if event['date'] > start:
+            nextMenu = event
+            break
+
+    return nextMenu
+
+
+
+@auth.requires_login()
+def get_json_schedule():
+    email = auth.user.email
+    myMenus = db(db.menu.user_id == email).select()
+    start = datetime.fromtimestamp(long(request.vars['start']))
+    end = datetime.fromtimestamp(long(request.vars['end']))
+    data = []
+    for menu in myMenus:
+        frequency = menu.frequency
+        date = menu.delivery_time
+        color = 'rgb(200,200,200)' if date < datetime.today() else 'yellow'
+        event = {'title':menu.name, 'start':date.strftime('%Y-%m-%dT%H:%M:%S'), 'color':color};
+        data.append(event)
+        while date < end:
+            date = date + timedelta(frequency*7)
+            color = 'rgb(200,200,200)' if date < datetime.today() else 'yellow'
+            event = {'title':menu.name, 'start':date.strftime('%Y-%m-%dT%H:%M:%S'), 'color':color};
+            data.append(event)
+
+    return json.dumps(data)
 
 def user():
     """

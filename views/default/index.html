@@ -14,12 +14,16 @@
                         center: '',
                         right: ''
                     },
-	    editable: true,
 
-            events:[ {
-                    title  : '{{=(row['name'])}}',
-                    start  : '{{=(row['date'])}}'
-                }]
+            events: {
+                url: '{{=URL('default', 'get_json_schedule')}}',
+                type: 'POST',
+                data: {},
+                error: function() {
+                    alert('there was an error while fetching events!');
+                },
+                textColor: 'black' // a non-ajax option
+            }
         })
     });
 </script>
@@ -31,12 +35,21 @@
 </style>
 
 <div>
-    <h1>
-        You're next meal is: <a>Meal Name</a>
-    </h1>
-    <h2>
-        To be delivered on: Delivery Date
-    </h2>
+    {{if menu != None:}}
+        <h1>
+            You're next meal is: <a href="{{=URL('default', 'view_menu', args=[menu['menu'].id])}}">{{=menu['menu'].name}}</a>
+        </h1>
+        <h2>
+            To be delivered on: {{=menu['date']}}
+        </h2>
+    {{else:}}
+        <h1>
+            You have no meals scheduled for this month
+        </h1>
+        <h2>
+            To create a menu click the "Make a menu" button in the header, then schedule your delivery in the schedule section.
+        </h2>
+    {{pass}}
     <h2>
         This month's schedule:
     </h2>

@@ -34,33 +34,95 @@
         float:left;
     }
 
+    .fc-event-inner{
+
+    }
+
+
 </style>
 
 <script>
     $(document).ready(function() {
-        /*$('#menus').accordion({
-            'width':350
-        });*/
+        //stores the most recent date to send to the server
+        var currentDate = null;
+        //stores the most recently selected menu name
+        var menuName = '';
 
         var draggableArguments={
-            revert: 'invalid',
+            //revert: 'invalid',
             helper:'clone',
-            appendTo: '#page',
+            appendTo: '#calendar',
             containment: 'DOM',
+            //stop: onDrop
             //zIndex: 1500,
             //addClasses: false
         }
 
         $('.menu-cell').draggable(draggableArguments);
 
-        $('#calendar').fullCalendar();
+        $('#calendar').fullCalendar({
+            droppable:true,
+            drop: onDrop,
+            events: {
+                url: '{{=URL('default', 'get_json_schedule')}}',
+                type: 'POST',
+                data: {},
+                error: function() {
+                    alert('there was an error while fetching events!');
+                },
+                textColor: 'black' // a non-ajax option
+            }
+        });
+
+        $('#dialog-form').dialog({
+            autoOpen: false,
+            height: 300,
+            width: 350,
+            modal: true,
+            buttons: {
+                "Schedule Menu": addDate,
+                "Cancel": function(){ $('#dialog-form').dialog("close") }
+            }
+        });
     });
+
+    function onDrop(date, allDay, jsEvent, ui) {
+
+        $('#dialog-form').dialog("open");
+        currentDate = date;
+        menuName = $(jsEvent.target).attr("name");
+        console.log(ui);
+    }
+
+    function addDate() {
+        var time = $("#time").val();
+        var frequency = $("#frequency").val();
+
+        //set the time of the currentDate to the time entered by the user
+        var datetime = currentDate;
+        var parts = time.split(":");
+        datetime.setHours(parts[0]);
+        datetime.setMinutes(parts[1]);
+        //datetime.setTime(time);
+        //var datetime = new Date(currentDate+" "+time)
+        $.ajax({
+            type: "POST",
+            url: '{{=URL('default', 'set_schedule')}}',
+            data:{'datetime':datetime, 'frequency':frequency, 'name':menuName},
+            success: function(data, textStatus, jqXHR){
+                        $('#calendar').fullCalendar( 'refetchEvents' )
+                        $('#dialog-form').dialog("close");
+                    },
+            dataType: 'json'
+        });
+    }
 </script>
 
 <div id=page>
+    {{if len(rows) != 0:}}
     <div class="menus-container" id="menus">
         {{for menu in rows:}}
-            <div class="menu-cell">
+            <div class="menu-cell" name="{{=menu.name}}">
             <h3>{{=menu.name}}</h3>
             <div>
                 <p>{{=menu.appetizer.name}}</p>
@@ -70,6 +132,23 @@
             </div>
         {{pass}}
     </div>
+    {{else:}}
+    <h1>You have not created any menus</h1>
+    {{pass}}
 
     <div class='calendar-container' id='calendar'></div>
+
+    <div id="dialog-form" title="Set Time and Frequency">
+    <p class="validateTips">All form fields are required.</p>
+
+    <form>
+    <fieldset>
+        <label for="time">Delivery Time</label>
+        <input type="time" name="time" id="time" class="text ui-widget-content ui-corner-all" />
+        <label for="frequency">Number of Weeks Between Deliveries</label>
+        <input type="number" name="frequency" id="frequency" value="" class="text ui-widget-content ui-corner-all" />
+    </fieldset>
+    </form>
+    </div>
+
 </div>
