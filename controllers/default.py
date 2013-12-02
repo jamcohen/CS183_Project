@@ -8,65 +8,36 @@
 # # - download is for downloading files uploaded in the db (does streaming)
 # # - call exposes all registered services (none by default)
 #########################################################################
+from datetime import date, datetime, timedelta
+import json
 
-
+@auth.requires_login()
 def index():
-    
-    response.flash = T("Welcome to web2py!")
-    response.menu = [['Home', False, URL('default', 'index')],
-                     ['Make A Menu', False, URL('default', 'create_menu')],
-                     ['Make A Schedule', False, URL('default', 'construction')],
-                     ['Make A Dish', False, URL('default', 'make_dish')],
-                     ['View My Menus', False, URL('default', 'my_menus')]]
-    return dict(menu="yolo")
+    menu = get_next_menu()
+    return dict(menu=menu)
 
 @auth.requires_login()
 def make_dish():
-    
-<<<<<<< HEAD
-    response.flash = T("Welcome to web2py!")
-=======
->>>>>>> ea7f5e14eede99b614fa877e26ef0e200c822582
-    response.menu = [['Home', False, URL('default', 'index')],
-                     ['Make A Menu', False, URL('default', 'create_menu')],
-                     ['Make A Schedule', False, URL('default', 'construction')],
-                     ['Make A Dish', False, URL('default', 'make_dish')],
-                     ['View My Menus', False, URL('default', 'my_menus')]]
-<<<<<<< HEAD
-
     db.dish.category.requires = IS_IN_SET(['Appetizer', 'Entree', 'Dessert'])
     form = SQLFORM(db.dish, fields = ['name', 'description', 'price', 'ingredients',
                                        'category', 'vegetarian', 'vegan', 'gluten_free'])
-=======
-    
-    #to populate the drop down to select the category
-    categories = ("Appetizer", "Entree", "Dessert")
-    form = SQLFORM.factory(Field('category', requires=IS_IN_SET(range(1, 4), categories)), db.dessert, db.appetizer, db.entree, deletable=True, upload=URL(r=request, f='download'))
-    
-    #based on which category the user selects the form processes to a different table
->>>>>>> ea7f5e14eede99b614fa877e26ef0e200c822582
     if form.process().accepted:
-        if(form.vars.category == "1"):
-            db.appetizer.insert(**db.appetizer._filter_fields(form.vars))
-            response.flash = 'form accepted'
-            redirect(URL('default', 'view_dish',args=[form.vars.name,"appetizer"]))
-        elif(form.vars.category == "2"):
-            db.entree.insert(**db.entree._filter_fields(form.vars))
-            response.flash = 'form accepted'
-            redirect(URL('default', 'view_dish',args=[form.vars.name,"entree"]))
-        elif(form.vars.category == "3"):
-            db.dessert.insert(**db.dessert._filter_fields(form.vars))
-            response.flash = 'form accepted'
-            redirect(URL('default', 'view_dish',args=[form.vars.name,"dessert"]))
-        
+        response.flash = 'Your dish has been created'
+        redirect(URL('default', 'view_dish',args=[form.vars.id]))
+
+
     return dict(form=form, menu="yolo")
 
+@auth.requires_login()
 #method to view single dishes
 def view_dish():
-<<<<<<< HEAD
-    dish = db.dish(request.args(0,cast=int))
+    dish = db.dish(db.dish.id==request.args(0))
+    if dish is None:
+        session.flash = 'invalid request'
+        redirect(URL('default', 'index'))
     return dict(dish=dish)
 
+@auth.requires_login()
 def all_dishes():
     q = db.dish
     grid = SQLFORM.grid(q,
@@ -75,158 +46,122 @@ def all_dishes():
            )
     return dict(grid=grid)
 
-@auth.requires_login() 
+@auth.requires_login()
+def schedule():
+    email = get_email()
+    rows = db(db.menu.user_id == email).select()
+    return dict(rows=rows)
+
+@auth.requires_login()
+def set_schedule():
+    #date = json.load(request.vars)
+    email = get_email()
+    jsonDate = request.vars['datetime']
+    #Tue Nov 05 2013 22:00:00 GMT-0800 (PST)
+    date = datetime.strptime(jsonDate, '%a %b %d %Y %H:%M:%S GMT-0800 (PST)')
+    name = request.vars['name']
+    frequency = request.vars['frequency']
+    query = (db.menu.name==name) & (db.menu.user_id==email)
+    db(query).update(delivery_time=date)
+    db(query).update(frequency=frequency)
+    return  json.dumps({'success':True})
+
+
+@auth.requires_login()
 def create_menu():
-    
-    response.flash = T("Welcome to web2py!")
-    response.menu = [['Home', False, URL('default', 'index')],
-                     ['Make A Menu', False, URL('default', 'create_menu')],
-                     ['Make A Schedule', False, URL('default', 'construction')],
-                     ['Make A Dish', False, URL('default', 'make_dish')],
-                     ['View My Menus', False, URL('default', 'my_menus')]]
-    
     db.menu.appetizer.requires = IS_IN_DB(db(db.dish.category=="Appetizer"), db.dish.id, '%(name)s')
     db.menu.entree.requires = IS_IN_DB(db(db.dish.category=="Entree"), db.dish.id, '%(name)s')
     db.menu.dessert.requires = IS_IN_DB(db(db.dish.category=="Dessert"), db.dish.id, '%(name)s')
     form = SQLFORM(db.menu, fields = ['name', 'appetizer', 'entree', 'dessert',
-                                       'serving_number', 'delivery_time', 'frequency'],)
+                                       'serving_number'],)
     if form.process().accepted:
-        
-        response.flash = 'form accepted'
+        response.flash = 'Your menu has been created'
+        redirect(URL('default', 'view_menu',args=[form.vars.id]))
     elif form.errors:
         response.flash = 'form has errors'
     else:
-       response.flash = 'please fill the form'
-   # Note: no form instance is passed to the view
+       response.flash = 'Please fill out the form'
     return dict(form=form)
 
 def get_dish_name(id):
     name = db.dish(id).name
     return name
 
-@auth.requires_login() 
+@auth.requires_login()
 def my_menus():
-    
-    response.flash = T("Welcome to web2py!")
-    response.menu = [['Home', False, URL('default', 'index')],
-                     ['Make A Menu', False, URL('default', 'create_menu')],
-                     ['Make A Schedule', False, URL('default', 'construction')],
-                     ['Make A Dish', False, URL('default', 'make_dish')],
-                     ['View My Menus', False, URL('default', 'my_menus')]]
-    
     email = auth.user.email
     mymenus = db(db.menu.user_id == email).select()
-    for menu in mymenus:
-        menu.update_record(appetizer_name=get_dish_name(menu.appetizer))
-        menu.update_record(entree_name=get_dish_name(menu.entree))
-        menu.update_record(dessert_name=get_dish_name(menu.dessert))
-        print menu.appetizer
     return dict(mymenus=mymenus)
-=======
-   
-    response.menu = [['Home', False, URL('default', 'index')],
-                     ['Make A Menu', False, URL('default', 'create_menu')],
-                     ['Make A Schedule', False, URL('default', 'construction')],
-                     ['Make A Dish', False, URL('default', 'make_dish')],
-                     ['View My Menus', False, URL('default', 'my_menus')]]
-    
-    dishname = request.args(0).replace("_"," ")
-    if(request.args(1) == "appetizer"):
-        dish = db(db.appetizer.name==dishname).select().first()
-        return dict(dish=dish)
-    elif(request.args(1) == "entree"):
-        dish = db(db.entree.name==dishname).select().first()
-        return dict(dish=dish)
-    elif(request.args(1) == "dessert"):
-        dish = db(db.dessert.name==dishname).select().first()
-        return dict(dish=dish,menu="yolo")
-    
-
-def all_dishes():
-   
-   appetizers = SQLFORM.grid(db.appetizer)
-   entrees = SQLFORM.grid(db.entree)
-   desserts = SQLFORM.grid(db.dessert)
-   return locals()
-
-@auth.requires_login() 
-def create_menu():
-    
-    response.menu = [['Home', False, URL('default', 'index')],
-                     ['Make A Menu', False, URL('default', 'create_menu')],
-                     ['Make A Schedule', False, URL('default', 'construction')],
-                     ['Make A Dish', False, URL('default', 'make_dish')],
-                     ['View My Menus', False, URL('default', 'my_menus')]]
-    
-    db.menu.appetizer.requires = IS_IN_DB(db, 'appetizer.name', '%(name)s')
-    db.menu.entree.requires = IS_IN_DB(db, 'entree.name', '%(name)s')
-    db.menu.dessert.requires = IS_IN_DB(db, 'dessert.name', '%(name)s')
->>>>>>> ea7f5e14eede99b614fa877e26ef0e200c822582
-
-    form = SQLFORM(db.menu)
-    if form.process().accepted:
-        response.flash = 'form accepted'
-    elif form.errors:
-        response.flash = 'form has errors'
-    else:
-       response.flash = 'please fill the form'
-   # Note: no form instance is passed to the view
-    return dict(form=form, menu="yolo")
-
-@auth.requires_login() 
-def my_menus():
-    
-    response.menu = [['Home', False, URL('default', 'index')],
-                     ['Make A Menu', False, URL('default', 'create_menu')],
-                     ['Make A Schedule', False, URL('default', 'construction')],
-                     ['Make A Dish', False, URL('default', 'make_dish')],
-                     ['View My Menus', False, URL('default', 'my_menus')]]
-        
-    email = auth.user.email
-    mymenus = db(db.menu.user_id == email).select()
-    return dict(mymenus=mymenus, menu="yolo")
 
 
-@auth.requires_login() 
+@auth.requires_login()
 def view_menu():
-    
     menu = db.menu(request.args(0))
+    if menu is None:
+        session.flash = 'invalid request'
+        redirect(URL('default', 'index'))
     email = auth.user.email
     if menu.user_id == email:
-        return dict(menu=menu)
+        return dict(menu=menu, app=menu.appetizer)
     else:
         session.flash = 'invalid request'
         redirect(URL('default', 'index'))
-        
-def all_menus():
-   
-   menus = SQLFORM.grid(db.menu)
-   return locals()
-        
 
-@auth.requires_login() 
-def view_menu():
-    
-    response.flash = T("Welcome to web2py!")
-    response.menu = [['Home', False, URL('default', 'index')],
-                     ['Make A Menu', False, URL('default', 'create_menu')],
-                     ['Make A Schedule', False, URL('default', 'construction')],
-                     ['Make A Dish', False, URL('default', 'make_dish')],
-                     ['View My Menus', False, URL('default', 'my_menus')]]
-    
-    menu = db.menu(request.args(0))
-    email = auth.user.email
-    if menu.user_id == email:
-        return dict(menu=menu)
-    else:
-        session.flash = 'invalid request'
-        redirect(URL('default', 'index'))
-        
+@auth.requires_login()
 def all_menus():
-   
    menus = SQLFORM.grid(db.menu)
-   return locals()
-        
+   return dict(menus=menus)
+
+@auth.requires_login()
+def get_next_menu():
+    email = auth.user.email
+    myMenus = db(db.menu.user_id == email).select()
+    start = datetime.today()
+    end = start + timedelta(31)
+    date = datetime.today() - timedelta(1)
+
+    #very inefficient, should probably get a better way to do this
+    #generate all menus in the next month
+    recurringMenus = []
+    for menu in myMenus:
+        frequency = menu.frequency
+        date = menu.delivery_time
+        recurringMenus.append({'menu':menu, 'date':date})
+        while date < end:
+            date = date + timedelta(frequency*7)
+            recurringMenus.append({'menu':menu, 'date':date})
+
+    recurringMenus.sort(key=lambda menu: menu['date'])
+    nextMenu = None
+    for event in recurringMenus:
+        if event['date'] > start:
+            nextMenu = event
+            break
+
+    return nextMenu
+
+
+
+@auth.requires_login()
+def get_json_schedule():
+    email = auth.user.email
+    myMenus = db(db.menu.user_id == email).select()
+    start = datetime.fromtimestamp(long(request.vars['start']))
+    end = datetime.fromtimestamp(long(request.vars['end']))
+    data = []
+    for menu in myMenus:
+        frequency = menu.frequency
+        date = menu.delivery_time
+        color = 'rgb(200,200,200)' if date < datetime.today() else 'yellow'
+        event = {'title':menu.name, 'start':date.strftime('%Y-%m-%dT%H:%M:%S'), 'color':color};
+        data.append(event)
+        while date < end:
+            date = date + timedelta(frequency*7)
+            color = 'rgb(200,200,200)' if date < datetime.today() else 'yellow'
+            event = {'title':menu.name, 'start':date.strftime('%Y-%m-%dT%H:%M:%S'), 'color':color};
+            data.append(event)
+
+    return json.dumps(data)
 
 def user():
     """

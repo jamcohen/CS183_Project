@@ -1,9 +1,57 @@
 {{extend 'layout.html'}}
+<script type='text/javascript' src='{{=URL('static', 'js/fullcalendar.min.js')}}'></script>
+<script>
+    $(document).ready(function() {
+
+        // page is now ready, initialize the calendar...
+        $('#calendar').fullCalendar({
+            theme:true,
+             height: 350,
+             buttons: false,
+            // put your options and callbacks here
+            header: {
+                        left: '',
+                        center: '',
+                        right: ''
+                    },
+
+            events: {
+                url: '{{=URL('default', 'get_json_schedule')}}',
+                type: 'POST',
+                data: {},
+                error: function() {
+                    alert('there was an error while fetching events!');
+                },
+                textColor: 'black' // a non-ajax option
+            }
+        })
+    });
+</script>
+
+<style>
+.calendar-container {
+    width: 600px;
+}
+</style>
+
 <div>
-    <h1>
-        You're next meal is: <a>Meal Name</a>
-    </h1>
+    {{if menu != None:}}
+        <h1>
+            You're next meal is: <a href="{{=URL('default', 'view_menu', args=[menu['menu'].id])}}">{{=menu['menu'].name}}</a>
+        </h1>
+        <h2>
+            To be delivered on: {{=menu['date']}}
+        </h2>
+    {{else:}}
+        <h1>
+            You have no meals scheduled for this month
+        </h1>
+        <h2>
+            To create a menu click the "Make a menu" button in the header, then schedule your delivery in the schedule section.
+        </h2>
+    {{pass}}
     <h2>
-        To be delivered on: Delivery Date
+        This month's schedule:
     </h2>
+    <div class='calendar-container' id='calendar'></div>
 </div>
