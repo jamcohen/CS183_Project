@@ -13,8 +13,8 @@ import json
 
 @auth.requires_login()
 def index():
-    menu = get_next_menu()
-    return dict(menu=menu)
+    delivery = get_next_delivery()
+    return dict(delivery=delivery)
 
 @auth.requires_login()
 def make_dish():
@@ -56,15 +56,74 @@ def schedule():
 def set_schedule():
     #date = json.load(request.vars)
     email = get_email()
-    jsonDate = request.vars['datetime']
-    #Tue Nov 05 2013 22:00:00 GMT-0800 (PST)
-    date = datetime.strptime(jsonDate, '%a %b %d %Y %H:%M:%S GMT-0800 (PST)')
+    date = get_date_from_json(request.vars['datetime'])
     name = request.vars['name']
-    frequency = request.vars['frequency']
-    query = (db.menu.name==name) & (db.menu.user_id==email)
-    db(query).update(delivery_time=date)
-    db(query).update(frequency=frequency)
+    frequency = int(request.vars['frequency'])
+    end = date + timedelta(30)
+
+    menu = db((db.menu.name == name) & (db.menu.user_id == email)).select().first()
+    if menu == None:
+        return json.dumps({'success':False})
+
+    deliveries = db(db.deliveries.menu == menu.id).select()
+    timeout = 0
+
+    #gets the dates to add to the calendar
+    while date < end:
+        timeframe = query_by_date(date)
+        t = db.deliveries
+        query = (t.menu==menu.id) & (t.delivery_time >= timeframe[0]) & (t.delivery_time < timeframe[1]) & (t.user_id==email)
+        overwrittenSet = db(query)
+        overwrittendelivery = overwrittenSet.select().first()
+        if overwrittendelivery is None:
+            db.deliveries.insert(menu=menu, delivery_time=date)
+        else:
+            overwrittenSet.update(delivery_time=date)
+
+        if frequency <= 0:
+            break
+
+        date = date + timedelta(frequency*7)
+
+        timeout+=1
+        if timeout > 60:
+            return json.dumps({'success':frequency})
+
     return  json.dumps({'success':True})
+
+def move_delivery():
+    newDate = get_date_from_json(request.vars['newDate'])
+    oldDate = newDate - timedelta(int(request.vars['dayDelta']))
+    name = request.vars['name']
+    email = get_email()
+    menu = db((db.menu.name == name) & (db.menu.user_id == email)).select().first()
+    if menu is None:
+        return {'success':False, 'reload':False}
+
+    timeframe = query_by_date(oldDate)
+    t = db.deliveries
+    query = (t.menu==menu.id) & (t.delivery_time >= timeframe[0]) & (t.delivery_time < timeframe[1]) & (t.user_id==email)
+    deliverySet = db(query)
+    delivery = deliverySet.select().first()
+    if delivery is None:
+        return json.dumps({'success':False, 'error':"Could not find original record", 'reload':False})
+    else:
+        #check if an event of the same name already exists in that location, if so overwrite it
+        timeframe = query_by_date(newDate)
+        t = db.deliveries
+        query = (t.menu==menu.id) & (t.delivery_time >= timeframe[0]) & (t.delivery_time < timeframe[1]) & (t.user_id==email)
+        overwrittenSet = db(query)
+        overwrittenDelivery = overwrittenSet.select().first()
+        if overwrittenDelivery is None:
+            deliverySet.update(delivery_time=newDate)
+        else:
+            overwrittenSet.update(delivery_time=newDate)
+            deliverySet.delete()
+            response.flash = 'Meal Overwritten'
+            return  json.dumps({'success':True, 'reload':True})
+
+
+    return  json.dumps({'success':True, 'reload':False})
 
 
 @auth.requires_login()
@@ -113,32 +172,15 @@ def all_menus():
    return dict(menus=menus)
 
 @auth.requires_login()
-def get_next_menu():
+def get_next_delivery():
     email = auth.user.email
     myMenus = db(db.menu.user_id == email).select()
     start = datetime.today()
     end = start + timedelta(31)
     date = datetime.today() - timedelta(1)
 
-    #very inefficient, should probably get a better way to do this
-    #generate all menus in the next month
-    recurringMenus = []
-    for menu in myMenus:
-        frequency = menu.frequency
-        date = menu.delivery_time
-        recurringMenus.append({'menu':menu, 'date':date})
-        while date < end:
-            date = date + timedelta(frequency*7)
-            recurringMenus.append({'menu':menu, 'date':date})
-
-    recurringMenus.sort(key=lambda menu: menu['date'])
-    nextMenu = None
-    for event in recurringMenus:
-        if event['date'] > start:
-            nextMenu = event
-            break
-
-    return nextMenu
+    nextDelivery = db( (db.deliveries.delivery_time >= start) & (db.deliveries.delivery_time < end) & (db.deliveries.user_id==email)).select(orderby=db.deliveries.delivery_time).first()
+    return nextDelivery
 
 
 
@@ -146,22 +188,34 @@ def get_next_menu():
 def get_json_schedule():
     email = auth.user.email
     myMenus = db(db.menu.user_id == email).select()
+    if myMenus is None:
+        return json.dumps([])
+
     start = datetime.fromtimestamp(long(request.vars['start']))
     end = datetime.fromtimestamp(long(request.vars['end']))
     data = []
-    for menu in myMenus:
-        frequency = menu.frequency
-        date = menu.delivery_time
+    deliveries = db( (db.deliveries.delivery_time <= end) & (db.deliveries.delivery_time >= start) & (db.deliveries.user_id == email)).select()
+
+    for delivery in deliveries:
+        date = delivery.delivery_time
+        if date is None:
+            continue
         color = 'rgb(200,200,200)' if date < datetime.today() else 'yellow'
-        event = {'title':menu.name, 'start':date.strftime('%Y-%m-%dT%H:%M:%S'), 'color':color};
+        event = {'title':delivery.menu.name, 'start':date.strftime('%Y-%m-%dT%H:%M:%S'), 'color':color};
         data.append(event)
-        while date < end:
-            date = date + timedelta(frequency*7)
-            color = 'rgb(200,200,200)' if date < datetime.today() else 'yellow'
-            event = {'title':menu.name, 'start':date.strftime('%Y-%m-%dT%H:%M:%S'), 'color':color};
-            data.append(event)
 
     return json.dumps(data)
+
+def query_by_date(dt):
+    date_start = dt.date()
+    date_end = date_start + timedelta(days=1)
+    return date_start, date_end
+
+def get_date_from_json(dateString):
+    newDate = str.join(' ', dateString.split(' ')[0:5])
+    date = datetime.strptime(newDate, '%a %b %d %Y %H:%M:%S')
+    return date
+
 
 def user():
     """
