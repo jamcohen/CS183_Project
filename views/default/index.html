@@ -35,12 +35,12 @@
 </style>
 
 <div>
-    {{if menu != None:}}
+    {{if delivery != None:}}
         <h1>
-            You're next meal is: <a href="{{=URL('default', 'view_menu', args=[menu['menu'].id])}}">{{=menu['menu'].name}}</a>
+            You're next meal is: <a href="{{=URL('default', 'view_menu', args=[delivery.menu])}}">{{=delivery.menu.name}}</a>
         </h1>
         <h2>
-            To be delivered on: {{=menu['date']}}
+            To be delivered on: {{=delivery.delivery_time}}
         </h2>
     {{else:}}
         <h1>

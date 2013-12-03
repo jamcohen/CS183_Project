@@ -34,8 +34,8 @@
         float:left;
     }
 
-    .fc-event-inner{
-
+    .fc-event-inner:hover{
+        background-color: rgb(200,200,200);
     }
 
 
@@ -71,8 +71,14 @@
                     alert('there was an error while fetching events!');
                 },
                 textColor: 'black' // a non-ajax option
-            }
+            },
+            editable: true,
+            eventDrop:moveDate
         });
+
+        //adjust z-index so events don't float above dialog
+        $('#calendar').css('position', 'relative')
+        $('#calendar').css('z-index', -1)
 
         $('#dialog-form').dialog({
             autoOpen: false,
@@ -116,6 +122,27 @@
             dataType: 'json'
         });
     }
+
+    function moveDate(event, dayDelta, minuteDelta, allDay, revertFunc, jsEvent, ui, view) {
+        //datetime.setTime(time);
+        //var datetime = new Date(currentDate+" "+time)
+        console.log(event.start)
+        console.log(dayDelta)
+
+        $.ajax({
+            type: "POST",
+            url: '{{=URL('default', 'move_delivery')}}',
+            data:{'dayDelta':dayDelta, 'newDate':event.start, 'name':event.title},
+            success: function(data, textStatus, jqXHR){
+                        console.log(data);
+                        if (data['reload']) {
+
+                            $('#calendar').fullCalendar( 'refetchEvents' )
+                        }
+                    },
+            dataType: 'json'
+        });
+    }
 </script>
 
 <div id=page>
@@ -138,17 +165,14 @@
 
     <div class='calendar-container' id='calendar'></div>
 
-    <div id="dialog-form" title="Set Time and Frequency">
-    <p class="validateTips">All form fields are required.</p>
-
-    <form>
-    <fieldset>
-        <label for="time">Delivery Time</label>
-        <input type="time" name="time" id="time" class="text ui-widget-content ui-corner-all" />
-        <label for="frequency">Number of Weeks Between Deliveries</label>
-        <input type="number" name="frequency" id="frequency" value="" class="text ui-widget-content ui-corner-all" />
+    <div id="dialog-form" title="Set Time and Frequency" style="height: auto">
+        <form>
+        <fieldset>
+            <label for="time">I want my food delivered at:</label>
+            <input type="time" name="time" id="time" class="text ui-widget-content ui-corner-all" />
+            <br><span>Every </span><input type="number" name="frequency" id="frequency" value="" class="text ui-widget-content ui-corner-all" style="width: 40px"/><span> Week(s)</span>
+            <br><span>Until </span><input type="date" name="end" id="end" value="" class="text ui-widget-content ui-corner-all" />
     </fieldset>
     </form>
     </div>
-
 </div>

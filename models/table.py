@@ -31,3 +31,11 @@ db.define_table('menu',
                 Field('user_id', default = get_email(), writable = False)
                 )
 
+db.define_table('deliveries',
+                Field('menu', db.menu),
+                Field('delivery_time', 'datetime'),
+                Field('user_id', default = get_email(), writable = False)
+                )
+
+
+
