@@ -1,46 +1,6 @@
 {{extend 'layout.html'}}
 <script type='text/javascript' src='{{=URL('static', 'js/fullcalendar.min.js')}}'></script>
 
-<style>
-    .menus-container{
-        width:15%;
-        max-height:600px;
-        border:solid;
-        overflow:auto;
-        float:left;
-        margin-top:83px;
-    }
-
-    .menu-cell{
-        margin-left:5px;
-        margin-right:5px;
-        margin-bottom: 20px;
-        margin-top:20px;
-        width:auto;
-        border:solid;
-    }
-
-    .menu-cell:hover{
-        background-color: rgb(200,200,200);
-    }
-
-    .menu-cell .ui-draggable-dragging{
-        color: rgb(50,0,0);
-        background-color: rgb(250,200,200);
-    }
-
-    .calendar-container{
-        width:70%;
-        float:left;
-    }
-
-    .fc-event-inner:hover{
-        background-color: rgb(200,200,200);
-    }
-
-
-</style>
-
 <script>
     $(document).ready(function() {
         //stores the most recent date to send to the server
@@ -79,8 +39,6 @@
             editable: true,
             eventDrop:moveDate
         });
-
-        //adjust z-index so events don't float above dialog
 
         $('#dialog-form').dialog({
             autoOpen: false,

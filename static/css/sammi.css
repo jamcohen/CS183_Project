@@ -1,0 +1,61 @@
+body {
+    background-image:url('http://freefever.com/stock/white-light-plain-background-wallpapers.jpg');
+    font-family:"Georgia";
+    color:#5C4033;
+    font-size:115%
+}
+
+    .menus-container{
+        width:15%;
+        max-height:500px;
+        border:solid;
+        overflow:auto;
+        float:left;
+        margin-top:83px;
+        background-color:#F0EAD6;
+    }
+
+    .menu-cell{
+        margin-left:5px;
+        margin-right:5px;
+        margin-bottom: 5px;
+        margin-top:5px;
+        width:auto;
+        border:solid;
+        text-align:center
+    }
+
+    .menu-cell:hover{
+        background-color:#C2B280;
+    }
+
+    .menu-cell .ui-draggable-dragging{
+        color: rgb(50,0,0);
+        background-color:#C2B280;
+    }
+
+    .calendar-container{
+        width:70%;
+        float:left;
+        text-align:center
+    }
+
+    .fc-event-inner:hover{
+        background-color:#FFDEAD;
+        text-align:center
+    }
+
+    .fc-border-separate{
+        background-color:#F0EAD6
+    }
+
+    .fc-day{
+        border-color:#000000
+	}
+    .fc-day-header{
+        border-color:#000000
+	}
+
+    .index_header{
+        color:#5C4033;
+    }
