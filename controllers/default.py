@@ -18,6 +18,7 @@ def index():
 
 @auth.requires_login()
 def make_dish():
+    weightURL = URL('default', 'add_weights')
     db.dish.category.requires = IS_IN_SET(['Appetizer', 'Entree', 'Dessert'])
     form = SQLFORM(db.dish, fields = ['name', 'description', 'price', 'ingredients',
                                        'category', 'vegetarian', 'vegan', 'gluten_free'])
@@ -25,8 +26,20 @@ def make_dish():
         response.flash = 'Your dish has been created'
         redirect(URL('default', 'view_dish',args=[form.vars.id]))
 
+    return dict(form=form,weightURL=weightURL)
 
-    return dict(form=form, menu="yolo")
+@auth.requires_login()
+def add_weights():
+    weightArray = eval(request.vars.array)
+    dishid = int(request.vars.id)
+    dish = db.dish(dishid)
+    for i in range(len(weightArray)):
+        if (((i+2)%2) == 0):
+            dish.ingredientWeights.insert(weightArray[i])
+        else:
+            dish.weightsMeasurements.insert(weightArray[i])
+
+    return response.json(dict(result=weightArray))
 
 @auth.requires_login()
 #method to view single dishes

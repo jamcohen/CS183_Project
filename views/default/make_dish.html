@@ -1,3 +1,50 @@
 {{extend 'layout.html'}}
+
+
+{{block head}}
+<style>
+            #weightdiv{
+                padding:0px;
+                display: inline
+            }
+</style>
+{{end}}
+
 <h1>Make Dish</h1>
+{{=BEAUTIFY(form)}}
 {{=BEAUTIFY(response._vars)}}
+
+<p><tt id="results"></tt></p>
+<input type="submit" id="addweights" value="addweights" class="btn">
+
+
+<script>
+$(document).ready(function(){
+  var weightData = [];
+  var newWeight = $("<div id='weightdiv'><input id='weight' name='weight' type='text'placeholder='Enter Weight Value'>");
+  var weightMeasurement = $("<select id='measurements' name='measurements'><option value=''>Measurement</option><option value='oz'>oz</option><option value='lbs'>lbs</option><option value='g'>g</option></select></div>");
+  $('form #dish_ingredients').after(weightMeasurement);
+  $('form #dish_ingredients').after(newWeight);
+
+  function addValues() {
+  	var fields = $( "form #weight , #measurements" ).serializeArray();
+  	$( "#results" ).empty();
+    jQuery.each( fields, function( i, field ) {
+      weightData.push(field.value);
+    });
+    weightData.forEach( printElement);
+  }
+
+  function printElement( elem ) {
+    $( "#results" ).append( elem + " " );
+  }
+
+  $("#addweights").on( "click", addValues );
+  $("#submit").on( "click", addValues );
+
+  $("#submit").click(function() {
+		ajax("{{=weightURL}}"+"?id="+form.vars.id+"?array="+weightData,[],'target');
+});
+});
+</script>
+
