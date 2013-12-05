@@ -14,6 +14,8 @@ db.define_table('dish',
                 Field('price', 'decimal(3,2)'),
                 Field('category'),
                 Field('ingredients', 'list:string'),
+                Field('ingredientWeights', 'list:integer'),
+                Field('weightsMeasurements', 'list:string'),
                 Field('vegetarian', 'boolean'),
                 Field('vegan', 'boolean'),
                 Field('gluten_free', 'boolean')
@@ -36,6 +38,3 @@ db.define_table('deliveries',
                 Field('delivery_time', 'datetime'),
                 Field('user_id', default = get_email(), writable = False)
                 )
-
-
-

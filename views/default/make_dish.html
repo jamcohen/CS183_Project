@@ -1,3 +1,135 @@
 {{extend 'layout.html'}}
+
+
+{{block head}}
+<style>
+            #weightdiv{
+                padding:0px;
+                display: inline
+            }
+</style>
+{{end}}
+
+
 <h1>Make Dish</h1>
-{{=BEAUTIFY(response._vars)}}
+<form action="#" enctype="multipart/form-data" method="post">
+   <table>
+      <tr id="dish_name__row">
+         <td class="w2p_fl"><label for="dish_name" id="dish_name__label">Name: </label></td>
+         <td class="w2p_fw"><input class="string" id="dish_name" name="name" type="text" value="" /></td>
+         <td class="w2p_fc"></td>
+      </tr>
+      <tr id="dish_description__row">
+         <td class="w2p_fl"><label for="dish_description" id="dish_description__label">Description: </label></td>
+         <td class="w2p_fw"><textarea class="text" cols="40" id="dish_description" name="description" rows="10"></textarea></td>
+         <td class="w2p_fc"></td>
+      </tr>
+      <tr id="dish_price__row">
+         <td class="w2p_fl"><label for="dish_price" id="dish_price__label">Price: </label></td>
+         <td class="w2p_fw"><input class="decimal" id="dish_price" name="price" type="text" value="" /></td>
+         <td class="w2p_fc"></td>
+      </tr>
+      <tr id="dish_ingredients__row">
+         <td class="w2p_fl"><label for="dish_ingredients" id="dish_ingredients__label">Ingredients</label></td>
+         <td class="w2p_fw">
+            <ul class="w2p_fw" id="dish_ingredients_grow_input" style="list-style:none">
+               <li>
+                    <input class="string" id="dish_ingredients" name="ingredients" type="text" value="" placeholder="Name"></input>
+                    <input class="double" id="dish_amount" name="amount" type="text" value="" placeholder="amount" step="0.01"></input>
+                    <select id="dish_measurment" name="measurement">
+                        <option value="null">Measurement</option>>
+                        <option value="oz">Ounce(s)</option>
+                        <option value="g">Gram(s)</option>
+                        <option value="tbsp">Tablespoon(s)</option>
+                        <option value="tsp">Teaspoon(s)</option>
+                        <option value="cup">Cup(s)</option>
+                    </select>
+                    <a class='incr'>+</a>
+                    <a class='decr'>-</a>
+               </li>
+            </ul>
+         </td>
+
+         <td class="w2p_fc"></td>
+      </tr>
+      <tr id="dish_vegetarian__row">
+         <td class="w2p_fl"><label for="dish_vegetarian" id="dish_vegetarian__label">Vegetarian: </label></td>
+         <td class="w2p_fw"><input class="boolean" id="dish_vegetarian" name="vegetarian" type="checkbox" value="on" /></td>
+         <td class="w2p_fc"></td>
+      </tr>
+      <tr id="dish_vegan__row">
+         <td class="w2p_fl"><label for="dish_vegan" id="dish_vegan__label">Vegan: </label></td>
+         <td class="w2p_fw"><input class="boolean" id="dish_vegan" name="vegan" type="checkbox" value="on" /></td>
+         <td class="w2p_fc"></td>
+      </tr>
+      <tr id="dish_gluten_free__row">
+         <td class="w2p_fl"><label for="dish_gluten_free" id="dish_gluten_free__label">Gluten Free: </label></td>
+         <td class="w2p_fw"><input class="boolean" id="dish_gluten_free" name="gluten_free" type="checkbox" value="on" /></td>
+         <td class="w2p_fc"></td>
+      </tr>
+   </table>
+   <div style="display:none;"><input name="_formkey" type="hidden" value="b7f61482-a3f1-4466-a1ea-0da5a915a4d5" /><input name="_formname" type="hidden" value="dish/create" /></div>
+</form>
+
+<p><tt id="results"></tt></p>
+<input type="submit" id="submit" value="Submit" class="btn">
+
+<script>
+    var inputHtml
+$(document).ready(function(){
+  var weightData = [];
+  //var newWeight = $("<div id='weightdiv'><input id='weight' name='weight' type='text'placeholder='Enter Weight Value'>");
+  //var weightMeasurement = $("<select id='measurements' name='measurements'><option value=''>Measurement</option><option value='oz'>oz</option><option value='lbs'>lbs</option><option value='g'>g</option></select></div>");
+  //$('form #dish_ingredients').after(weightMeasurement);
+  //$('form #dish_ingredients').after(newWeight);
+    inputHtml = $('#dish_ingredients_grow_input').html()
+
+    $("body").on( "click", '.incr', increment );
+    $("body").on( "click", '.decr', decriment);
+    $("body").on( "click", '#submit', submitForm);
+
+    //$('dish_ingredients_grow_input').html(inputHtml)
+
+  /*function addValues() {
+  	var fields = $( "form #weight , #measurements" ).serializeArray();
+  	$( "#results" ).empty();
+    jQuery.each( fields, function( i, field ) {
+      weightData.push(field.value);
+    });
+    weightData.forEach( printElement);
+  }
+
+  function printElement( elem ) {
+    $( "#results" ).append( elem + " " );
+  }
+
+  $("#addweights").on( "click", addValues );
+  $("#submit").on( "click", addValues );
+
+  $("#submit").click(function() {
+		ajax("{{=weightURL}}"+"?id="+form.vars.id+"?array="+weightData,[],'target');
+    });*/
+});
+
+function decriment() {
+    $('#dish_ingredients_grow_input').children().last().remove()
+}
+
+function increment() {
+    $('#dish_ingredients_grow_input').children().last().after(inputHtml)
+}
+
+function submitForm() {
+    ingredientArray = [];
+    $('#dish_ingredients_grow_input').children().each(function(){
+        var name = $($(this).children()[0]).val();
+        var amount = $($(this).children()[1]).val();
+        var measurement = $($(this).children()[2]).val();
+        var dict = {'name':name, 'amount':amount, 'measurement':measurement};
+        ingredientArray.push(dict);
+    });
+    console.log(ingredientArray);
+    console.log($('form').serializeArray());
+}
+</script>
+

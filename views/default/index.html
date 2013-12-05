@@ -5,7 +5,7 @@
 
         // page is now ready, initialize the calendar...
         $('#calendar').fullCalendar({
-            theme:true,
+            theme:false,
              height: 350,
              buttons: false,
             // put your options and callbacks here
@@ -34,7 +34,11 @@
 }
 </style>
 
-<div>
+<font color="black">
+<font="Georgia">
+
+<div class="index_header">
+    
     {{if delivery != None:}}
         <h1>
             You're next meal is: <a href="{{=URL('default', 'view_menu', args=[delivery.menu])}}">{{=delivery.menu.name}}</a>
@@ -55,3 +59,4 @@
     </h2>
     <div class='calendar-container' id='calendar'></div>
 </div>
+    </font></font>

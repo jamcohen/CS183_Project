@@ -18,15 +18,34 @@ def index():
 
 @auth.requires_login()
 def make_dish():
+    weightURL = URL('default', 'add_weights')
     db.dish.category.requires = IS_IN_SET(['Appetizer', 'Entree', 'Dessert'])
+
     form = SQLFORM(db.dish, fields = ['name', 'description', 'price', 'ingredients',
                                        'category', 'vegetarian', 'vegan', 'gluten_free'])
     if form.process().accepted:
         response.flash = 'Your dish has been created'
         redirect(URL('default', 'view_dish',args=[form.vars.id]))
-
-
     return dict(form=form, menu="yolo")
+
+    return dict(form=form,weightURL=weightURL)
+
+@auth.requires_login()
+def add_weights():
+    weightArray = eval(request.vars.array)
+    dishid = int(request.vars.id)
+    dish = db.dish(dishid)
+    for i in range(len(weightArray)):
+        if (((i+2)%2) == 0):
+            dish.ingredientWeights.insert(weightArray[i])
+        else:
+            dish.weightsMeasurements.insert(weightArray[i])
+
+    return response.json(dict(result=weightArray))
+
+def about_us():
+    return dict()
+
 
 @auth.requires_login()
 #method to view single dishes
@@ -200,7 +219,7 @@ def get_json_schedule():
         date = delivery.delivery_time
         if date is None:
             continue
-        color = 'rgb(200,200,200)' if date < datetime.today() else 'yellow'
+        color = '#FFDEAD' if date < datetime.today() else '#C2B280'
         event = {'title':delivery.menu.name, 'start':date.strftime('%Y-%m-%dT%H:%M:%S'), 'color':color};
         data.append(event)
 
