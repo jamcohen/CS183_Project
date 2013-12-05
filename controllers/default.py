@@ -19,12 +19,19 @@ def index():
     return dict(menu="yolo")
 
 def make_dish():
+    response.menu = [['Home', False, URL('default', 'index')],
+                     ['Make A Menu', False, URL('default', 'construction')],
+                     ['Make A Schedule', False, URL('default', 'construction')],
+                     ['Make A Dish', False, URL('default', 'make_dish')]]
     form = SQLFORM(db.dish, fields = ['name', 'description', 'price', 'ingredients',
                                        'category', 'vegetarian', 'vegan', 'gluten_free'])
     if form.process().accepted:
         db.dish(form.vars.id)
         redirect(URL('default', 'view_dish', args=[form.vars.id]))
     return dict(form=form)
+
+def about_us():
+    return dict()
 
 def view_dish():
     Dish = db.dish(request.args(0,cast=int))
