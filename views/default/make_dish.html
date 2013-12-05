@@ -29,12 +29,23 @@
          <td class="w2p_fw"><input class="decimal" id="dish_price" name="price" type="text" value="" /></td>
          <td class="w2p_fc"></td>
       </tr>
+      <tr id="dish_category__row">
+         <td class="w2p_fl"><label for="dish_category" id="dish_category__label">Category: </label></td>
+         <td class="w2p_fw" name="category">
+            <select class="generic-widget" id="dish_category" name="category">
+               <option value="Appetizer">Appetizer</option>>
+                <option value="Entree">Entree</option>
+                <option value="Dessert">Dessert</option>
+            </select>
+         </td>
+         <td class="w2p_fc"></td>
+      </tr>
       <tr id="dish_ingredients__row">
          <td class="w2p_fl"><label for="dish_ingredients" id="dish_ingredients__label">Ingredients</label></td>
          <td class="w2p_fw">
             <ul class="w2p_fw" id="dish_ingredients_grow_input" style="list-style:none">
                <li>
-                    <input class="string" id="dish_ingredients" name="ingredients" type="text" value="" placeholder="Name"></input>
+                    <input class="string" id="dish_ingredient" name="ingredient" type="text" value="" placeholder="Name"></input>
                     <input class="double" id="dish_amount" name="amount" type="text" value="" placeholder="amount" step="0.01"></input>
                     <select id="dish_measurment" name="measurement">
                         <option value="null">Measurement</option>>
@@ -128,8 +139,21 @@ function submitForm() {
         var dict = {'name':name, 'amount':amount, 'measurement':measurement};
         ingredientArray.push(dict);
     });
-    console.log(ingredientArray);
-    console.log($('form').serializeArray());
+    arguments = $("form :input[name!='amount'][name!='ingredient'][name!='measurement']").serializeArray();
+    data = {}
+    for (var i in arguments) {
+        key = arguments[i]['name'];
+        value = arguments[i]['value'];
+        data[key] = value;
+    }
+    data['jsonIngredients'] = JSON.stringify(ingredientArray);
+    console.log(data)
+    $.ajax({
+        url:"{{=URL('default', 'insert_dish')}}",
+        data: data,
+        type: 'POST',
+        dataType: 'json'
+    })
 }
 </script>
 

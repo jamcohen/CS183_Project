@@ -19,7 +19,7 @@ def index():
 @auth.requires_login()
 def make_dish():
     weightURL = URL('default', 'add_weights')
-    db.dish.category.requires = IS_IN_SET(['Appetizer', 'Entree', 'Dessert'])
+
 
     form = SQLFORM(db.dish, fields = ['name', 'description', 'price', 'ingredients',
                                        'category', 'vegetarian', 'vegan', 'gluten_free'])
@@ -29,17 +29,20 @@ def make_dish():
     return dict(form=form,weightURL=weightURL)
 
 @auth.requires_login()
-def add_weights():
-    weightArray = eval(request.vars.array)
-    dishid = int(request.vars.id)
-    dish = db.dish(dishid)
-    for i in range(len(weightArray)):
-        if (((i+2)%2) == 0):
-            dish.ingredientWeights.insert(weightArray[i])
-        else:
-            dish.weightsMeasurements.insert(weightArray[i])
+def insert_dish():
+    name = request.vars['name']
+    description = request.vars['description']
+    jsonIngredients = request.vars['jsonIngredients']
+    price = request.vars['price']
+    category = request.vars['category']
+    vegetarian = request.vars['vegetarian']
+    vegan = request.vars['vegan']
+    gluten_free = request.vars['gluten_free']
 
-    return response.json(dict(result=weightArray))
+    newId = db.dish.insert(name=name, description=description, ingredients=jsonIngredients, price=price, category=category, vegetarian=vegetarian, gluten_free=gluten_free, vegan=vegan)
+    response.flash = 'Your dish has been created'
+    redirect(URL('default', 'view_dish',args=[newId]))
+    return response.json(dict(new=newId))
 
 def about_us():
     return dict()
