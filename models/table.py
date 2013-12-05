@@ -13,14 +13,13 @@ db.define_table('dish',
                 Field('description', 'text'),
                 Field('price', 'decimal(3,2)'),
                 Field('category'),
-                Field('ingredients', 'list:string'),
-                Field('ingredientWeights', 'list:integer'),
-                Field('weightsMeasurements', 'list:string'),
-                Field('vegetarian', 'boolean'),
-                Field('vegan', 'boolean'),
-                Field('gluten_free', 'boolean')
+                Field('ingredients', 'json'),
+                Field('vegetarian', 'boolean', default = False),
+                Field('vegan', 'boolean', default = False),
+                Field('gluten_free', 'boolean', default = False)
                 )
 
+db.dish.category.requires = IS_IN_SET(['Appetizer', 'Entree', 'Dessert'])
 
 db.define_table('menu',
                 Field('appetizer',db.dish),
