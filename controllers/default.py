@@ -204,7 +204,7 @@ def get_json_schedule():
         date = delivery.delivery_time
         if date is None:
             continue
-        color = 'rgb(200,200,200)' if date < datetime.today() else 'yellow'
+        color = '#FFDEAD' if date < datetime.today() else '#C2B280'
         event = {'title':delivery.menu.name, 'start':date.strftime('%Y-%m-%dT%H:%M:%S'), 'color':color};
         data.append(event)
 

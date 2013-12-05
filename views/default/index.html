@@ -5,7 +5,7 @@
 
         // page is now ready, initialize the calendar...
         $('#calendar').fullCalendar({
-            theme:true,
+            theme:false,
              height: 350,
              buttons: false,
             // put your options and callbacks here
@@ -32,16 +32,13 @@
 .calendar-container {
     width: 600px;
 }
-body {
-    background-image:url('http://hdwallpc.com/wp-content/uploads/2013/10/White-Background-Wallpaper-Image-Pics.jpg');
-    #background-color:#cccccc;
-}
 </style>
 
 <font color="black">
 <font="Georgia">
 
-<div>
+<div class="index_header">
+    
     {{if delivery != None:}}
         <h1>
             You're next meal is: <a href="{{=URL('default', 'view_menu', args=[delivery.menu])}}">{{=delivery.menu.name}}</a>
