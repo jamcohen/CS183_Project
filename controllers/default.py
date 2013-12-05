@@ -26,8 +26,6 @@ def make_dish():
     if form.process().accepted:
         response.flash = 'Your dish has been created'
         redirect(URL('default', 'view_dish',args=[form.vars.id]))
-    return dict(form=form, menu="yolo")
-
     return dict(form=form,weightURL=weightURL)
 
 @auth.requires_login()
