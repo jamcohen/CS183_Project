@@ -60,6 +60,10 @@
 
         $('.menu-cell').draggable(draggableArguments);
 
+        $('#calendar').css('position', 'relative')
+        $('#calendar').css('z-index', 0)
+
+
         $('#calendar').fullCalendar({
             droppable:true,
             drop: onDrop,
@@ -77,8 +81,6 @@
         });
 
         //adjust z-index so events don't float above dialog
-        $('#calendar').css('position', 'relative')
-        $('#calendar').css('z-index', -1)
 
         $('#dialog-form').dialog({
             autoOpen: false,
