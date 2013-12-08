@@ -1,0 +1,39 @@
+{{extend 'layout.html'}}
+<body>
+<ul>
+{{for row in rows:}}
+<li>{{row.menu}}</li>
+{{pass}}
+</ul>
+<div class="ingredients"></div>
+</body>
+
+<script>
+$(document).ready(function(){
+	
+	var arrayofingredients = [];
+	{{for dish in ingredients:}}
+	arrayofingredients.push({{=dish}});
+	{{pass}}
+	
+	for(var i = 0; i < arrayofingredients.length; i++){
+	var jsonstring = JSON.stringify(arrayofingredients[i]);
+	var ingredientsArray = JSON.parse(jsonstring);
+	for(var key in ingredientsArray) {
+		if (ingredientsArray.hasOwnProperty(key)) {
+    		console.log(key + " -> " + ingredientsArray[key]['name']);
+    		if ($("#"+ingredientsArray[key]['name']).length){
+        		$("#"+ingredientsArray[key]['name']).append(document.createTextNode(ingredientsArray[key]['name'] + " " + ingredientsArray[key]['amount'] + ingredientsArray[key]['measurement'] + " "));
+        		continue;
+    		}
+    			var $mydiv = document.createElement("div");
+				$mydiv.id = ingredientsArray[key]['name'];
+				$($mydiv).append(document.createTextNode(ingredientsArray[key]['name'] + " " + ingredientsArray[key]['amount'] + ingredientsArray[key]['measurement'] + " "));
+				$('.ingredients').append($mydiv);
+ 		
+  		}
+	}
+	}
+});
+
+</script>

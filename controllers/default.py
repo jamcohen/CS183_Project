@@ -11,6 +11,7 @@
 from datetime import date, datetime, timedelta
 import json
 
+
 @auth.requires_login()
 def index():
     delivery = get_next_delivery()
@@ -41,12 +42,33 @@ def insert_dish():
 
     newId = db.dish.insert(name=name, description=description, ingredients=jsonIngredients, price=price, category=category, vegetarian=vegetarian, gluten_free=gluten_free, vegan=vegan)
     response.flash = 'Your dish has been created'
-    redirect(URL('default', 'view_dish',args=[newId]))
-    return response.json(dict(new=newId))
+    
+    return response.json(dict(result=newId))
 
 def about_us():
     return dict()
 
+def shopping_list():
+    today = datetime.now()
+    stop = today + timedelta(days=7)
+    rows = db((db.deliveries.delivery_time >= today) & (db.deliveries.delivery_time < stop)).select()
+    menus = db(db.menu.id>=0).select()
+    dishes = []
+    for menu in menus:
+        dishes.append(menu.appetizer)
+        dishes.append(menu.entree)
+        dishes.append(menu.dessert)
+    
+    ingredients = []
+    for dish in dishes:
+        ingredients.append(XML(dish.ingredients))
+    
+    return dict(dishes=dishes, ingredients=ingredients, rows=rows)
+
+def all_schedules():
+    q = db.deliveries
+    grid = SQLFORM.grid(q)
+    return dict(grid=grid)
 
 @auth.requires_login()
 #method to view single dishes
@@ -144,6 +166,7 @@ def move_delivery():
 
 
     return  json.dumps({'success':True, 'reload':False})
+
 
 
 @auth.requires_login()

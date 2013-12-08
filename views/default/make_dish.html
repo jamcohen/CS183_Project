@@ -86,14 +86,10 @@
 <input type="submit" id="submit" value="Submit" class="btn">
 
 <script>
-    var inputHtml
+    var inputHtml;
 $(document).ready(function(){
   var weightData = [];
-  //var newWeight = $("<div id='weightdiv'><input id='weight' name='weight' type='text'placeholder='Enter Weight Value'>");
-  //var weightMeasurement = $("<select id='measurements' name='measurements'><option value=''>Measurement</option><option value='oz'>oz</option><option value='lbs'>lbs</option><option value='g'>g</option></select></div>");
-  //$('form #dish_ingredients').after(weightMeasurement);
-  //$('form #dish_ingredients').after(newWeight);
-    inputHtml = $('#dish_ingredients_grow_input').html()
+  inputHtml = $('#dish_ingredients_grow_input').html()
 
     $("body").on( "click", '.incr', increment );
     $("body").on( "click", '.decr', decriment);
@@ -101,25 +97,7 @@ $(document).ready(function(){
 
     //$('dish_ingredients_grow_input').html(inputHtml)
 
-  /*function addValues() {
-  	var fields = $( "form #weight , #measurements" ).serializeArray();
-  	$( "#results" ).empty();
-    jQuery.each( fields, function( i, field ) {
-      weightData.push(field.value);
-    });
-    weightData.forEach( printElement);
-  }
 
-  function printElement( elem ) {
-    $( "#results" ).append( elem + " " );
-  }
-
-  $("#addweights").on( "click", addValues );
-  $("#submit").on( "click", addValues );
-
-  $("#submit").click(function() {
-		ajax("{{=weightURL}}"+"?id="+form.vars.id+"?array="+weightData,[],'target');
-    });*/
 });
 
 function decriment() {
@@ -152,8 +130,16 @@ function submitForm() {
         url:"{{=URL('default', 'insert_dish')}}",
         data: data,
         type: 'POST',
-        dataType: 'json'
+        dataType: 'json',
+        success: function(result) {
+        	var id;
+      		for(key in result){
+      			id = result[key];
+      		}
+      		window.location = "{{=URL('default', 'view_dish') + '/'}}" + id;
+      	}
     })
+
 }
 </script>
 
