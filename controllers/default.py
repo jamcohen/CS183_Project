@@ -49,11 +49,16 @@ def about_us():
     return dict()
 
 def shopping_list():
-    today = datetime.now()
-    stop = today + timedelta(days=7)
-    rows = db((db.deliveries.delivery_time >= today) & (db.deliveries.delivery_time < stop)).select()
-    menus = db(db.menu.id>=0).select()
+    
+    menus = []
     dishes = []
+    today = datetime.now()
+    stop = today + timedelta(days=14)
+    rows = db((db.deliveries.delivery_time >= today) & (db.deliveries.delivery_time < stop)).select()
+    
+    for row in rows:
+        menus.append(row.menu)
+        
     for menu in menus:
         dishes.append(menu.appetizer)
         dishes.append(menu.entree)
