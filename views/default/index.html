@@ -38,7 +38,7 @@
 <font="Georgia">
 
 <div class="index_header">
-    
+
     {{if delivery != None:}}
         <h1>
             You're next meal is: <a href="{{=URL('default', 'view_menu', args=[delivery.menu])}}">{{=delivery.menu.name}}</a>
@@ -48,10 +48,11 @@
         </h2>
     {{else:}}
         <h1>
-            You have no meals scheduled for this month
+            You have no meals scheduled for this month.
         </h1>
         <h2>
-            To create a menu click the "Make a menu" button in the header, then schedule your delivery in the schedule section.
+            To create a menu click the "Make A Menu" button in the header,
+            <br>then schedule your delivery in the "Make A Schedule" section.
         </h2>
     {{pass}}
     <h2>

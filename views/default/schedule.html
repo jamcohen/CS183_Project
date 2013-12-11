@@ -63,6 +63,7 @@
     function addDate() {
         var time = $("#time").val();
         var frequency = $("#frequency").val();
+        var end = $("#end").val();
 
         //set the time of the currentDate to the time entered by the user
         var datetime = currentDate;
@@ -74,7 +75,7 @@
         $.ajax({
             type: "POST",
             url: '{{=URL('default', 'set_schedule')}}',
-            data:{'datetime':datetime, 'frequency':frequency, 'name':menuName},
+            data:{'datetime':datetime, 'frequency':frequency, 'name':menuName, 'end':end},
             success: function(data, textStatus, jqXHR){
                         $('#calendar').fullCalendar( 'refetchEvents' )
                         $('#dialog-form').dialog("close");
@@ -112,6 +113,7 @@
             <div class="menu-cell" name="{{=menu.name}}">
             <h3>{{=menu.name}}</h3>
             <div>
+                <span>${{=menu.price}}</span>
                 <p>{{=menu.appetizer.name}}</p>
                 <p>{{=menu.entree.name}}</p>
                 <p>{{=menu.dessert.name}}</p>

@@ -17,6 +17,7 @@ def index():
     delivery = get_next_delivery()
     return dict(delivery=delivery)
 
+@auth.requires_membership('chefs')
 @auth.requires_login()
 def make_dish():
     weightURL = URL('default', 'add_weights')
@@ -29,6 +30,7 @@ def make_dish():
         redirect(URL('default', 'view_dish',args=[form.vars.id]))
     return dict(form=form,weightURL=weightURL)
 
+@auth.requires_membership('chefs')
 @auth.requires_login()
 def insert_dish():
     name = request.vars['name']
@@ -39,15 +41,54 @@ def insert_dish():
     vegetarian = request.vars['vegetarian']
     vegan = request.vars['vegan']
     gluten_free = request.vars['gluten_free']
+    requiredFields = ['name', 'description', 'price', 'category']
 
-    newId = db.dish.insert(name=name, description=description, ingredients=jsonIngredients, price=price, category=category, vegetarian=vegetarian, gluten_free=gluten_free, vegan=vegan)
-    response.flash = 'Your dish has been created'
-    
-    return response.json(dict(result=newId))
+    errors = [];
+    for field in requiredFields:
+        if request.vars[field].strip() == "":
+            errors.append({'label':field, 'message':"A dish must have a "+field});
+
+    if name.strip() != "":
+        rows = db(db.dish.name == name).select()
+        if len(rows)>0:
+            errors.append({'label':'name', 'message':"There is already a dish with this name"});
+    if price.strip() != "":
+        if not is_number(price):
+            errors.append({'label':'price', 'message':"The price must be a number"})
+        elif float(price) < 0:
+            errors.append({'label':'price', 'message':"The price cannot be less than zero"})
+
+    ingredients = json.loads(jsonIngredients)
+    if len(ingredients) < 1:
+        errors.append({'label':ingredients, 'message':"The dish must have at least one ingredient"})
+    else:
+        for ingredient in ingredients:
+            ingredientError = None;
+            n = ingredient['name']
+            a = ingredient['amount']
+            m = ingredient['measurement']
+            if n.strip()=='' or a.strip()=='' or m=='null':
+                ingredientError = {'label':'ingredients', 'message':"All ingredients must have a name, amount, and measurement type"};
+            elif not is_number(a):
+                ingredientError = {'label':'ingredients', 'message':"The amount must be a number"}
+            elif float(a) <= 0:
+                ingredientError = {'label':'ingredients', 'message':"The amount must be greater than zero"}
+        if ingredientError:
+            errors.append(ingredientError);
+
+
+    if len(errors) < 1:
+        response.flash = 'Your dish has been created'
+        newId = db.dish.insert(name=name, description=description, ingredients=jsonIngredients, price=price, category=category, vegetarian=vegetarian, gluten_free=gluten_free, vegan=vegan)
+        return response.json(dict(result=newId, errors=errors))
+    else:
+        response.flash = 'Your form has errors'
+        return response.json(dict(result=None, errors=errors))
 
 def about_us():
     return dict()
 
+@auth.requires_membership('chefs')
 def shopping_list():
     today = datetime.now()
     stop = today + timedelta(days=7)
@@ -58,11 +99,11 @@ def shopping_list():
         dishes.append(menu.appetizer)
         dishes.append(menu.entree)
         dishes.append(menu.dessert)
-    
+
     ingredients = []
     for dish in dishes:
         ingredients.append(XML(dish.ingredients))
-    
+
     return dict(dishes=dishes, ingredients=ingredients, rows=rows)
 
 def all_schedules():
@@ -97,11 +138,11 @@ def schedule():
 @auth.requires_login()
 def set_schedule():
     #date = json.load(request.vars)
-    email = get_email()
-    date = get_date_from_json(request.vars['datetime'])
-    name = request.vars['name']
-    frequency = int(request.vars['frequency'])
-    end = date + timedelta(30)
+    email = get_email();
+    date = get_date_from_json(request.vars['datetime']);
+    name = request.vars['name'];
+    frequency = int(request.vars['frequency']);
+    end = datetime.strptime(request.vars['end'], '%Y-%m-%d');
 
     menu = db((db.menu.name == name) & (db.menu.user_id == email)).select().first()
     if menu == None:
@@ -258,6 +299,14 @@ def get_date_from_json(dateString):
     newDate = str.join(' ', dateString.split(' ')[0:5])
     date = datetime.strptime(newDate, '%a %b %d %Y %H:%M:%S')
     return date
+
+def is_number(string):
+    try:
+        float(string)
+        return True
+    except ValueError:
+        return False
+
 
 
 def user():

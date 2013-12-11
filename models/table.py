@@ -37,3 +37,4 @@ db.define_table('deliveries',
                 Field('delivery_time', 'datetime'),
                 Field('user_id', default = get_email(), writable = False)
                 )
+

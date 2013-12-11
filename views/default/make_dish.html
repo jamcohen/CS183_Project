@@ -83,7 +83,7 @@
 </form>
 
 <p><tt id="results"></tt></p>
-<input type="submit" id="submit" value="Submit" class="btn">
+<input id="submit" value="Submit" class="btn">
 
 <script>
     var inputHtml;
@@ -126,20 +126,25 @@ function submitForm() {
     }
     data['jsonIngredients'] = JSON.stringify(ingredientArray);
     console.log(data)
+    $('.error').remove();
     $.ajax({
         url:"{{=URL('default', 'insert_dish')}}",
         data: data,
         type: 'POST',
         dataType: 'json',
         success: function(result) {
-        	var id;
-      		for(key in result){
-      			id = result[key];
-      		}
-      		window.location = "{{=URL('default', 'view_dish') + '/'}}" + id;
+      		console.log(result)
+                if (result['result']) {
+                    window.location = "{{=URL('default', 'view_dish') + '/'}}" + result['result'];
+                }
+                for (i in result['errors']) {
+                    error = result['errors'][i];
+                    console.log(error['label']);
+                    $('#dish_'+error['label']+'__row').after("<tr><td></td><td><div class='error' id='appetizer__error' style='display: inline-block;'>"+error['message']+"</div></td></tr>");
+                    "<div class='error' id='appetizer__error' style='display: inline-block;'>"+"</div>";
+                }
       	}
     })
-
 }
 </script>
 

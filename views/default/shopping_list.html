@@ -6,16 +6,17 @@
 {{pass}}
 </ul>
 <div class="ingredients"></div>
+<p>{{=rows}}</p>
 </body>
 
 <script>
 $(document).ready(function(){
-	
+
 	var arrayofingredients = [];
 	{{for dish in ingredients:}}
 	arrayofingredients.push({{=dish}});
 	{{pass}}
-	
+
 	for(var i = 0; i < arrayofingredients.length; i++){
 	var jsonstring = JSON.stringify(arrayofingredients[i]);
 	var ingredientsArray = JSON.parse(jsonstring);
@@ -30,7 +31,7 @@ $(document).ready(function(){
 				$mydiv.id = ingredientsArray[key]['name'];
 				$($mydiv).append(document.createTextNode(ingredientsArray[key]['name'] + " " + ingredientsArray[key]['amount'] + ingredientsArray[key]['measurement'] + " "));
 				$('.ingredients').append($mydiv);
- 		
+
   		}
 	}
 	}
