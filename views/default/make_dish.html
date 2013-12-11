@@ -15,28 +15,28 @@
 <form action="#" enctype="multipart/form-data" method="post">
    <table>
       <tr id="dish_name__row">
-         <td class="w2p_fl"><label for="dish_name" id="dish_name__label">Name: </label></td>
+         <td class="w2p_fl"><label for="dish_name" id="dish_name__label"><b>Name: </b></label></td>
          <td class="w2p_fw"><input class="string" id="dish_name" name="name" type="text" value="" /></td>
          <td class="w2p_fc"></td>
       </tr>
       <tr id="dish_description__row">
-         <td class="w2p_fl"><label for="dish_description" id="dish_description__label">Description: </label></td>
+         <td class="w2p_fl"><label for="dish_description" id="dish_description__label"><b>Description: </b></label></td>
          <td class="w2p_fw"><textarea class="text" cols="40" id="dish_description" name="description" rows="10"></textarea></td>
          <td class="w2p_fc"></td>
       </tr>
       <tr id="dish_price__row">
-         <td class="w2p_fl"><label for="dish_price" id="dish_price__label">Price: </label></td>
-         <td class="w2p_fw"><input class="decimal" id="dish_price" name="price" type="text" value="" /></td>
+         <td class="w2p_fl"><label for="dish_price" id="dish_price__label"><b>Price: </b></label></td>
+         <td class="w2p_fw"><input class="decimal" id="dish_price" name="price" type="text" value="" style="width:60px;"/></td>
          <td class="w2p_fc"></td>
       </tr>
       <tr id="dish_ingredients__row">
-         <td class="w2p_fl"><label for="dish_ingredients" id="dish_ingredients__label">Ingredients</label></td>
+          <td class="w2p_fl"><label for="dish_ingredients" id="dish_ingredients__label"><b>Ingredients: </b></label></td>
          <td class="w2p_fw">
             <ul class="w2p_fw" id="dish_ingredients_grow_input" style="list-style:none">
                <li>
-                    <input class="string" id="dish_ingredients" name="ingredients" type="text" value="" placeholder="Name"></input>
-                    <input class="double" id="dish_amount" name="amount" type="text" value="" placeholder="amount" step="0.01"></input>
-                    <select id="dish_measurment" name="measurement">
+                    <input class="string" id="dish_ingredients" name="ingredients" type="text" value="" placeholder="Name" style="width:200px;"></input>
+             <input class="double" id="dish_amount" name="amount" type="text" value="" placeholder="amount" step="0.01" style="width:60px;"></input>
+                    <select id="dish_measurment" name="measurement" style="width:125px;">
                         <option value="null">Measurement</option>>
                         <option value="oz">Ounce(s)</option>
                         <option value="g">Gram(s)</option>
@@ -53,17 +53,17 @@
          <td class="w2p_fc"></td>
       </tr>
       <tr id="dish_vegetarian__row">
-         <td class="w2p_fl"><label for="dish_vegetarian" id="dish_vegetarian__label">Vegetarian: </label></td>
+          <td class="w2p_fl"><label for="dish_vegetarian" id="dish_vegetarian__label"><b>Vegetarian: </b></label></td>
          <td class="w2p_fw"><input class="boolean" id="dish_vegetarian" name="vegetarian" type="checkbox" value="on" /></td>
          <td class="w2p_fc"></td>
       </tr>
       <tr id="dish_vegan__row">
-         <td class="w2p_fl"><label for="dish_vegan" id="dish_vegan__label">Vegan: </label></td>
+         <td class="w2p_fl"><label for="dish_vegan" id="dish_vegan__label"><b>Vegan: </b></label></td>
          <td class="w2p_fw"><input class="boolean" id="dish_vegan" name="vegan" type="checkbox" value="on" /></td>
          <td class="w2p_fc"></td>
       </tr>
       <tr id="dish_gluten_free__row">
-         <td class="w2p_fl"><label for="dish_gluten_free" id="dish_gluten_free__label">Gluten Free: </label></td>
+         <td class="w2p_fl"><label for="dish_gluten_free" id="dish_gluten_free__label"><b>Gluten Free: </b></label></td>
          <td class="w2p_fw"><input class="boolean" id="dish_gluten_free" name="gluten_free" type="checkbox" value="on" /></td>
          <td class="w2p_fc"></td>
       </tr>
@@ -132,4 +132,3 @@ function submitForm() {
     console.log($('form').serializeArray());
 }
 </script>
-

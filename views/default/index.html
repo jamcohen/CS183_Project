@@ -40,23 +40,21 @@
 <div class="index_header">
     
     {{if delivery != None:}}
-        <h1>
+        <h3>
             You're next meal is: <a href="{{=URL('default', 'view_menu', args=[delivery.menu])}}">{{=delivery.menu.name}}</a>
-        </h1>
-        <h2>
+        <br>
             To be delivered on: {{=delivery.delivery_time}}
-        </h2>
+        </h3>
     {{else:}}
-        <h1>
+        <h3>
             You have no meals scheduled for this month
-        </h1>
-        <h2>
+        <br>
             To create a menu click the "Make a menu" button in the header, then schedule your delivery in the schedule section.
-        </h2>
+        </h3>
     {{pass}}
-    <h2>
+    <h3>
         This month's schedule:
-    </h2>
+    </h3>
     <div class='calendar-container' id='calendar'></div>
 </div>
     </font></font>
