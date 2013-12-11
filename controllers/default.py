@@ -90,11 +90,20 @@ def about_us():
 
 @auth.requires_membership('chefs')
 def shopping_list():
-    today = datetime.now()
-    stop = today + timedelta(days=7)
-    rows = db((db.deliveries.delivery_time >= today) & (db.deliveries.delivery_time < stop)).select()
-    menus = db(db.menu.id>=0).select()
+    return dict()
+
+def get_shopping_list():
+
+    menus = []
     dishes = []
+    today = datetime.now()
+    numofweeks = int(request.vars['numofweeks'])*7
+    stop = today + timedelta(days=numofweeks)
+    rows = db((db.deliveries.delivery_time >= today) & (db.deliveries.delivery_time < stop)).select()
+
+    for row in rows:
+        menus.append(row.menu)
+
     for menu in menus:
         dishes.append(menu.appetizer)
         dishes.append(menu.entree)
@@ -102,9 +111,9 @@ def shopping_list():
 
     ingredients = []
     for dish in dishes:
-        ingredients.append(XML(dish.ingredients))
+        ingredients.append((dish.ingredients))
 
-    return dict(dishes=dishes, ingredients=ingredients, rows=rows)
+    return response.json(dict(ingredients=ingredients))
 
 def all_schedules():
     q = db.deliveries
@@ -219,6 +228,13 @@ def create_menu():
                                        'serving_number'],)
     if form.process().accepted:
         response.flash = 'Your menu has been created'
+        dishes = [form.vars.appetizer,form.vars.entree,form.vars.dessert]
+        price = 0
+        id = form.vars.id
+        for dish in dishes:
+            price += (db(db.dish.id == dish).select().first().price)*form.vars.serving_number
+        response.flash = price
+        db(db.menu.id == id).select().first().update_record(price=price)
         redirect(URL('default', 'view_menu',args=[form.vars.id]))
     elif form.errors:
         response.flash = 'form has errors'
@@ -284,7 +300,7 @@ def get_json_schedule():
         date = delivery.delivery_time
         if date is None:
             continue
-        color = '#FFDEAD' if date < datetime.today() else '#C2B280'
+        color = '#B7AFA3' if date < datetime.today() else '#C2B280'
         event = {'title':delivery.menu.name, 'start':date.strftime('%Y-%m-%dT%H:%M:%S'), 'color':color};
         data.append(event)
 
