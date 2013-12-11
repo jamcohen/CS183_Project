@@ -30,42 +30,36 @@ $("#weeks").change(function(){
 		dataType: 'json',
 		success: function(ingredients) {
 
-			console.log(ingredients);
-			/*var ingredientMap = {};
-			var ingredientsArray;
-			for (var key in ingredients) {
-				var jsonstring = JSON.stringify(ingredients[key]);
-				ingredientsArray = JSON.parse(jsonstring);
-			}*/
-			for (var i in ingredients){
-
-				var jsonstring = JSON.stringify(ingredients[i]);
-				console.log(jsonstring);
+			var ingredientMap = {};
+			var ingredientsArray = ingredients['ingredients'];
+			for (var i in ingredientsArray) {
+				ingredientsArray[i] = JSON.parse(ingredientsArray[i]);
 			}
+			console.log(ingredientsArray);
 
+			for(var i in ingredientsArray) {
+				console.log(ingredientsArray[i]);
+				if (ingredientsArray.hasOwnProperty(i)) {
+				console.log(i + " -> " + ingredientsArray[i][0]['name']);
+				if ($("#"+ingredientsArray[i][0]['name']).length){
+					if (ingredientsArray[i][0]['name'] in ingredientMap) {
+						if (ingredientsArray[i][0]['measurement'] in ingredientMap[ingredientsArray[i][0]['name']]) {
+							var amount = parseInt(ingredientMap[ingredientsArray[i][0]['name']][ingredientsArray[i][0]['measurement']]);
+							amount += parseInt(ingredientsArray[i][0]['amount']);
+							ingredientMap[ingredientsArray[i][0]['name']][ingredientsArray[i][0]['measurement']] = amount;
 
-			for(var key in ingredients) {
-				console.log(ingredients[key]);
-				if (ingredientsArray.hasOwnProperty(key)) {
-				console.log(key + " -> " + ingredientsArray[key]['name']);
-				if ($("#"+ingredientsArray[key]['name']).length){
-					if (ingredientsArray[key]['name'] in ingredientMap) {
-						if (ingredientsArray[key]['measurement'] in ingredientMap[ingredientsArray[key]['name']]) {
-							var amount = parseInt(ingredientMap[ingredientsArray[key]['name']][ingredientsArray[key]['measurement']]);
-							amount += parseInt(ingredientsArray[key]['amount']);
-							ingredientMap[ingredientsArray[key]['name']][ingredientsArray[key]['measurement']] = amount;
 						}
 						else {
-							ingredientMap[ingredientsArray[key]['name']][ingredientsArray[key]['measurement']] = ingredientsArray[key]['amount'];
+							ingredientMap[ingredientsArray[i][0]['name']][ingredientsArray[i][0]['measurement']] = ingredientsArray[i][0]['amount'];
 						}
 					}
 					continue;
 				}
 					var measurementMap = {}
-					ingredientMap[ingredientsArray[key]['name']] = measurementMap;
-					measurementMap[ingredientsArray[key]['measurement']] = ingredientsArray[key]['amount'];
+					ingredientMap[ingredientsArray[i][0]['name']] = measurementMap;
+					measurementMap[ingredientsArray[i][0]['measurement']] = ingredientsArray[i][0]['amount'];
 					var $mydiv = document.createElement("div");
-					$mydiv.id = ingredientsArray[key]['name'];
+					$mydiv.id = ingredientsArray[i][0]['name'];
 					$('.ingredients').append($mydiv);
 
 				}
