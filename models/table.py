@@ -29,7 +29,8 @@ db.define_table('menu',
                 Field('serving_number', 'integer'), #number of people this menu should serve
                 Field('delivery_time', 'datetime'),
                 Field('frequency', 'integer'), #number of days between deliveries ex. 7 = weekly deliveries
-                Field('user_id', default = get_email(), writable = False)
+                Field('user_id', default = get_email(), writable = False),
+                Field('price', 'decimal(3,2)')
                 )
 
 db.define_table('deliveries',

@@ -49,11 +49,15 @@ def about_us():
     return dict()
 
 def shopping_list():
+    return dict()
+
+def get_shopping_list():
     
     menus = []
     dishes = []
     today = datetime.now()
-    stop = today + timedelta(days=14)
+    numofweeks = int(request.vars['numofweeks'])*7
+    stop = today + timedelta(days=numofweeks)
     rows = db((db.deliveries.delivery_time >= today) & (db.deliveries.delivery_time < stop)).select()
     
     for row in rows:
@@ -66,9 +70,9 @@ def shopping_list():
     
     ingredients = []
     for dish in dishes:
-        ingredients.append(XML(dish.ingredients))
+        ingredients.append((dish.ingredients))
     
-    return dict(dishes=dishes, ingredients=ingredients, rows=rows)
+    return response.json(dict(ingredients=ingredients))
 
 def all_schedules():
     q = db.deliveries
@@ -183,6 +187,13 @@ def create_menu():
                                        'serving_number'],)
     if form.process().accepted:
         response.flash = 'Your menu has been created'
+        dishes = [form.vars.appetizer,form.vars.entree,form.vars.dessert]
+        price = 0
+        id = form.vars.id
+        for dish in dishes:
+            price += (db(db.dish.id == dish).select().first().price)*form.vars.serving_number
+        response.flash = price
+        db(db.menu.id == id).select().first().update_record(price=price)
         redirect(URL('default', 'view_menu',args=[form.vars.id]))
     elif form.errors:
         response.flash = 'form has errors'

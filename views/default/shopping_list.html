@@ -1,56 +1,87 @@
 {{extend 'layout.html'}}
 <body>
-<div class="ingredients"></div>
+	<form id="numOfWeeks" name="numOfWeeks" method="post" action="">
+		<label> How many weeks of Shopping would you like?<br>
+			<select name="weeks" id="weeks">
+				<option value="1">1</option>
+				<option value="2">2</option>
+				<option value="3">3</option>
+				<option value="4">4</option>
+				<option value="5">5</option>
+				<option value="6">6</option>
+				<option value="7">7</option>
+				<option value="8">8</option>
+				<option value="9">9</option>
+			</select>
+		</label>
+	</form>
+	
+	<div class="ingredients"></div>
 </body>
 
 <script>
 $(document).ready(function(){
+	
+$("#weeks").change(function(){
 
-	var arrayofingredients = [];
-	var ingredientMap = {};
-	{{for dish in ingredients:}}
-	arrayofingredients.push({{=dish}});
-	{{pass}}
-
-	for(var i = 0; i < arrayofingredients.length; i++){
-	var jsonstring = JSON.stringify(arrayofingredients[i]);
-	var ingredientsArray = JSON.parse(jsonstring);
-	for(var key in ingredientsArray) {
-		if (ingredientsArray.hasOwnProperty(key)) {
-		console.log(key + " -> " + ingredientsArray[key]['name']);
-		if ($("#"+ingredientsArray[key]['name']).length){
-			if (ingredientsArray[key]['name'] in ingredientMap) {				
-				if (ingredientsArray[key]['measurement'] in ingredientMap[ingredientsArray[key]['name']]) {
-					var amount = parseInt(ingredientMap[ingredientsArray[key]['name']][ingredientsArray[key]['measurement']]);
-					amount += parseInt(ingredientsArray[key]['amount']);
-					ingredientMap[ingredientsArray[key]['name']][ingredientsArray[key]['measurement']] = amount;
+	$.ajax({
+		url:"{{=URL('default', 'get_shopping_list')}}",
+		data: {'numofweeks':$(this).val().toString()},
+		type: 'POST',
+		dataType: 'json',
+		success: function(ingredients) {
+			
+			console.log(ingredients);
+			/*var ingredientMap = {};
+			var ingredientsArray;
+			for (var key in ingredients) {
+				var jsonstring = JSON.stringify(ingredients[key]);
+				ingredientsArray = JSON.parse(jsonstring);
+			}*/
+			for (var i in ingredients){
+			
+				var jsonstring = JSON.stringify(ingredients[i]);
+				console.log(jsonstring);
+			}
+			
+			
+			for(var key in ingredients) {
+				console.log(ingredients[key]);
+				if (ingredientsArray.hasOwnProperty(key)) {
+				console.log(key + " -> " + ingredientsArray[key]['name']);
+				if ($("#"+ingredientsArray[key]['name']).length){
+					if (ingredientsArray[key]['name'] in ingredientMap) {				
+						if (ingredientsArray[key]['measurement'] in ingredientMap[ingredientsArray[key]['name']]) {
+							var amount = parseInt(ingredientMap[ingredientsArray[key]['name']][ingredientsArray[key]['measurement']]);
+							amount += parseInt(ingredientsArray[key]['amount']);
+							ingredientMap[ingredientsArray[key]['name']][ingredientsArray[key]['measurement']] = amount;
+						}
+						else {
+							ingredientMap[ingredientsArray[key]['name']][ingredientsArray[key]['measurement']] = ingredientsArray[key]['amount'];
+						}
+					}
+					continue;
 				}
-				else {
-					ingredientMap[ingredientsArray[key]['name']][ingredientsArray[key]['measurement']] = ingredientsArray[key]['amount'];
+					var measurementMap = {}
+					ingredientMap[ingredientsArray[key]['name']] = measurementMap;
+					measurementMap[ingredientsArray[key]['measurement']] = ingredientsArray[key]['amount'];
+					var $mydiv = document.createElement("div");
+					$mydiv.id = ingredientsArray[key]['name'];
+					$('.ingredients').append($mydiv);
+		
 				}
 			}
-			continue;
+			
+			
+			for(var ingredient in ingredientMap){
+				$('#'+ingredient).append(ingredient + " ");
+				for (measurement in ingredientMap[ingredient]) {
+					$('#'+ingredient).append(ingredientMap[ingredient][measurement] + " " + measurement + " ");
+				}
+			}
 		}
-			var measurementMap = {}
-			ingredientMap[ingredientsArray[key]['name']] = measurementMap;
-			measurementMap[ingredientsArray[key]['measurement']] = ingredientsArray[key]['amount'];
-			var $mydiv = document.createElement("div");
-			$mydiv.id = ingredientsArray[key]['name'];
-			$('.ingredients').append($mydiv);
-
-		}
-	}
-	}
-	
-	for(var ingredient in ingredientMap){
-		$('#'+ingredient).append(ingredient + " ");
-		for (measurement in ingredientMap[ingredient]) {
-			$('#'+ingredient).append(ingredientMap[ingredient][measurement] + " " + measurement + " ");
-		}
-	}
-	
-	console.log(ingredientMap);
-	console.log(ingredientMap['eggplant']['g']);
+	})
+})
 });
 
 </script>
