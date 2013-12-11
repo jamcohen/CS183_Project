@@ -79,7 +79,7 @@
           <span class="icon-bar"></span>
           <span class="icon-bar"></span>
         </button>
-        {{=response.logo or ''}}
+        {{#=response.logo or ''}}
         <ul id="navbar" class="nav pull-right">{{='auth' in globals() and auth.navbar(mode="dropdown") or ''}}</ul>
         <div class="{{='nav-collapse' if is_mobile else 'nav'}}">
             {{include 'components/header_menu.html'}}
