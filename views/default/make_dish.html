@@ -29,6 +29,17 @@
          <td class="w2p_fw"><input class="decimal" id="dish_price" name="price" type="text" value="" style="width:60px;"/></td>
          <td class="w2p_fc"></td>
       </tr>
+      <tr id="dish_category__row">
+         <td class="w2p_fl"><label for="dish_category" id="dish_category__label">Category: </label></td>
+         <td class="w2p_fw" name="category">
+            <select class="generic-widget" id="dish_category" name="category">
+               <option value="Appetizer">Appetizer</option>>
+                <option value="Entree">Entree</option>
+                <option value="Dessert">Dessert</option>
+            </select>
+         </td>
+         <td class="w2p_fc"></td>
+      </tr>
       <tr id="dish_ingredients__row">
           <td class="w2p_fl"><label for="dish_ingredients" id="dish_ingredients__label"><b>Ingredients: </b></label></td>
          <td class="w2p_fw">
@@ -75,14 +86,10 @@
 <input type="submit" id="submit" value="Submit" class="btn">
 
 <script>
-    var inputHtml
+    var inputHtml;
 $(document).ready(function(){
   var weightData = [];
-  //var newWeight = $("<div id='weightdiv'><input id='weight' name='weight' type='text'placeholder='Enter Weight Value'>");
-  //var weightMeasurement = $("<select id='measurements' name='measurements'><option value=''>Measurement</option><option value='oz'>oz</option><option value='lbs'>lbs</option><option value='g'>g</option></select></div>");
-  //$('form #dish_ingredients').after(weightMeasurement);
-  //$('form #dish_ingredients').after(newWeight);
-    inputHtml = $('#dish_ingredients_grow_input').html()
+  inputHtml = $('#dish_ingredients_grow_input').html()
 
     $("body").on( "click", '.incr', increment );
     $("body").on( "click", '.decr', decriment);
@@ -90,25 +97,7 @@ $(document).ready(function(){
 
     //$('dish_ingredients_grow_input').html(inputHtml)
 
-  /*function addValues() {
-  	var fields = $( "form #weight , #measurements" ).serializeArray();
-  	$( "#results" ).empty();
-    jQuery.each( fields, function( i, field ) {
-      weightData.push(field.value);
-    });
-    weightData.forEach( printElement);
-  }
 
-  function printElement( elem ) {
-    $( "#results" ).append( elem + " " );
-  }
-
-  $("#addweights").on( "click", addValues );
-  $("#submit").on( "click", addValues );
-
-  $("#submit").click(function() {
-		ajax("{{=weightURL}}"+"?id="+form.vars.id+"?array="+weightData,[],'target');
-    });*/
 });
 
 function decriment() {
@@ -128,7 +117,28 @@ function submitForm() {
         var dict = {'name':name, 'amount':amount, 'measurement':measurement};
         ingredientArray.push(dict);
     });
-    console.log(ingredientArray);
-    console.log($('form').serializeArray());
+    arguments = $("form :input[name!='amount'][name!='ingredient'][name!='measurement']").serializeArray();
+    data = {}
+    for (var i in arguments) {
+        key = arguments[i]['name'];
+        value = arguments[i]['value'];
+        data[key] = value;
+    }
+    data['jsonIngredients'] = JSON.stringify(ingredientArray);
+    console.log(data)
+    $.ajax({
+        url:"{{=URL('default', 'insert_dish')}}",
+        data: data,
+        type: 'POST',
+        dataType: 'json',
+        success: function(result) {
+        	var id;
+      		for(key in result){
+      			id = result[key];
+      		}
+      		window.location = "{{=URL('default', 'view_dish') + '/'}}" + id;
+      	}
+    })
+
 }
 </script>

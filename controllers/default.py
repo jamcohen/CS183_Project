@@ -11,6 +11,7 @@
 from datetime import date, datetime, timedelta
 import json
 
+
 @auth.requires_login()
 def index():
     delivery = get_next_delivery()
@@ -19,7 +20,7 @@ def index():
 @auth.requires_login()
 def make_dish():
     weightURL = URL('default', 'add_weights')
-    db.dish.category.requires = IS_IN_SET(['Appetizer', 'Entree', 'Dessert'])
+
 
     form = SQLFORM(db.dish, fields = ['name', 'description', 'price', 'ingredients',
                                        'category', 'vegetarian', 'vegan', 'gluten_free'])
@@ -29,21 +30,50 @@ def make_dish():
     return dict(form=form,weightURL=weightURL)
 
 @auth.requires_login()
-def add_weights():
-    weightArray = eval(request.vars.array)
-    dishid = int(request.vars.id)
-    dish = db.dish(dishid)
-    for i in range(len(weightArray)):
-        if (((i+2)%2) == 0):
-            dish.ingredientWeights.insert(weightArray[i])
-        else:
-            dish.weightsMeasurements.insert(weightArray[i])
+def insert_dish():
+    name = request.vars['name']
+    description = request.vars['description']
+    jsonIngredients = request.vars['jsonIngredients']
+    price = request.vars['price']
+    category = request.vars['category']
+    vegetarian = request.vars['vegetarian']
+    vegan = request.vars['vegan']
+    gluten_free = request.vars['gluten_free']
 
-    return response.json(dict(result=weightArray))
+    newId = db.dish.insert(name=name, description=description, ingredients=jsonIngredients, price=price, category=category, vegetarian=vegetarian, gluten_free=gluten_free, vegan=vegan)
+    response.flash = 'Your dish has been created'
+    
+    return response.json(dict(result=newId))
 
 def about_us():
     return dict()
 
+def shopping_list():
+    
+    menus = []
+    dishes = []
+    today = datetime.now()
+    stop = today + timedelta(days=14)
+    rows = db((db.deliveries.delivery_time >= today) & (db.deliveries.delivery_time < stop)).select()
+    
+    for row in rows:
+        menus.append(row.menu)
+        
+    for menu in menus:
+        dishes.append(menu.appetizer)
+        dishes.append(menu.entree)
+        dishes.append(menu.dessert)
+    
+    ingredients = []
+    for dish in dishes:
+        ingredients.append(XML(dish.ingredients))
+    
+    return dict(dishes=dishes, ingredients=ingredients, rows=rows)
+
+def all_schedules():
+    q = db.deliveries
+    grid = SQLFORM.grid(q)
+    return dict(grid=grid)
 
 @auth.requires_login()
 #method to view single dishes
@@ -141,6 +171,7 @@ def move_delivery():
 
 
     return  json.dumps({'success':True, 'reload':False})
+
 
 
 @auth.requires_login()
